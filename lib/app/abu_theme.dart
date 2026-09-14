@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class KslasTheme {
-  const KslasTheme._();
+class AbuTheme {
+  const AbuTheme._();
 
   static ThemeData light() {
     const seed = Color(0xFF145C4A);

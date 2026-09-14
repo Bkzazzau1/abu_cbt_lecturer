@@ -164,8 +164,9 @@ class ExamWorkflowItem {
   }
 
   static Map<String, dynamic> _map(dynamic value) {
-    if (value is Map)
+    if (value is Map) {
       return value.map((key, item) => MapEntry(key.toString(), item));
+    }
     return const {};
   }
 

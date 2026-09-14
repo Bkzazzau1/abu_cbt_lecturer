@@ -94,7 +94,7 @@ class _LecturerAssignmentsMarkingPanelState
     _ExamMarkingSample(
       courseCode: 'CSC 305',
       examTitle: 'Data Structures CBT + Theory',
-      candidateNo: 'DLC/CSC305/044',
+      candidateNo: 'ABU/CSC305/044',
       student: 'Maryam Bello',
       objectiveScore: 32,
       theoryScore: 41,
@@ -108,7 +108,7 @@ class _LecturerAssignmentsMarkingPanelState
     _ExamMarkingSample(
       courseCode: 'CSC 305',
       examTitle: 'Data Structures CBT + Theory',
-      candidateNo: 'DLC/CSC305/071',
+      candidateNo: 'ABU/CSC305/071',
       student: 'Tunde Okafor',
       objectiveScore: 28,
       theoryScore: 0,
@@ -122,7 +122,7 @@ class _LecturerAssignmentsMarkingPanelState
     _ExamMarkingSample(
       courseCode: 'CSC 309',
       examTitle: 'Artificial Intelligence Practical',
-      candidateNo: 'DLC/CSC309/118',
+      candidateNo: 'ABU/CSC309/118',
       student: 'Fatima Sani',
       objectiveScore: 24,
       theoryScore: 30,
@@ -1222,7 +1222,7 @@ class _AssignmentSubmissionFilePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Distance Learning Centre - Assignment Submission File',
+                    'University Centre - Assignment Submission File',
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -1859,7 +1859,7 @@ class _ExamTranscriptPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Distance Learning Centre - Examination Transcript',
+                    'University Centre - Examination Transcript',
                     textAlign: TextAlign.center,
                   ),
                 ],

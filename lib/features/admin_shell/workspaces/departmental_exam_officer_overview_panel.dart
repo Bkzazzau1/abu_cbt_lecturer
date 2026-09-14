@@ -69,7 +69,7 @@ class DepartmentalExamOfficerOverviewPanel extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Operational exam coordination under the HoD as Chief Departmental Exam Officer: 32 exam courses, 28 questions submitted, 22 approved, 1,180 eligible students, and 18 result batches submitted.',
+              'Operational exam coordination under the HoD as Chief Exam Officer: 32 exam courses, 28 questions submitted, 22 approved, 1,180 eligible students, and 18 result batches submitted.',
               style: text.bodyMedium,
             ),
             const SizedBox(height: 18),

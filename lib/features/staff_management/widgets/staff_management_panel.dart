@@ -1,3 +1,4 @@
+import '../../../models/admin_role.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/network/api_client.dart';
@@ -497,7 +498,10 @@ class _CreateStaffDialogState extends State<_CreateStaffDialog> {
                 decoration: const InputDecoration(labelText: 'Primary role'),
                 items: [
                   for (final role in staffRoleOptions)
-                    DropdownMenuItem(value: role, child: Text(role)),
+                    DropdownMenuItem(
+                      value: role,
+                      child: Text(adminRoleFromCode(role)!.label),
+                    ),
                 ],
                 onChanged: (value) =>
                     setState(() => _role = value ?? 'lecturer'),
@@ -587,7 +591,10 @@ class _AssignRoleDialogState extends State<_AssignRoleDialog> {
                 decoration: const InputDecoration(labelText: 'Role'),
                 items: [
                   for (final role in staffRoleOptions)
-                    DropdownMenuItem(value: role, child: Text(role)),
+                    DropdownMenuItem(
+                      value: role,
+                      child: Text(adminRoleFromCode(role)!.label),
+                    ),
                 ],
                 onChanged: (value) =>
                     setState(() => _role = value ?? 'lecturer'),

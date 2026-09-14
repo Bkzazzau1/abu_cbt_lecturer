@@ -1,4 +1,4 @@
-package com.example.kslas_admin_ui
+package com.example.abu_cbt_admin
 
 import io.flutter.embedding.android.FlutterActivity
 

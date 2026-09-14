@@ -27,8 +27,8 @@ class _ExamSessionsOverviewPanelState extends State<ExamSessionsOverviewPanel> {
       note: 'Monitor CBT Centre 1 app ID exceptions before final sign-off.',
     ),
     _SessionSummary(
-      session: 'DLC Online Proctoring Group A',
-      mode: 'Distance Learning',
+      session: 'ABU Online Proctoring Group A',
+      mode: 'University',
       rooms: 4,
       candidates: 780,
       checkedIn: 734,
@@ -59,7 +59,7 @@ class _ExamSessionsOverviewPanelState extends State<ExamSessionsOverviewPanel> {
     _SessionReview(
       title: 'Escalated CSC 309 proctoring reports',
       owner: 'Chief Invigilator',
-      scope: 'DLC Online Proctoring Group A',
+      scope: 'ABU Online Proctoring Group A',
       reason:
           'Multiple high-confidence events were reported within the same candidate session.',
       status: 'Escalated',
@@ -187,8 +187,8 @@ class _ExamSessionsOverviewPanelState extends State<ExamSessionsOverviewPanel> {
                         child: Text('CBT Centre'),
                       ),
                       DropdownMenuItem(
-                        value: 'Distance Learning',
-                        child: Text('Distance Learning'),
+                        value: 'University',
+                        child: Text('University'),
                       ),
                       DropdownMenuItem(value: 'Hybrid', child: Text('Hybrid')),
                     ],

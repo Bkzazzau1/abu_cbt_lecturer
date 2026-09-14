@@ -79,7 +79,7 @@ class HodDepartmentOverviewPanel extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'B.Sc. Computer Science DLC academic supervision: 1,250 students, 18 lecturers, 42 courses, 35 active courses, and 7 pending readiness actions.',
+              'B.Sc. Computer Science ABU academic supervision: 1,250 students, 18 lecturers, 42 courses, 35 active courses, and 7 pending readiness actions.',
               style: text.bodyMedium,
             ),
             const SizedBox(height: 18),

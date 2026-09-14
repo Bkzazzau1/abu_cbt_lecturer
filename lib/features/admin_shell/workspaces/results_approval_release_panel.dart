@@ -77,8 +77,8 @@ class _ResultsApprovalReleasePanelState
       time: 'Today, 10:12',
     ),
     _ResultAudit(
-      actor: 'Records Desk',
-      role: 'Records Department',
+      actor: 'Exam Office',
+      role: 'Exam Officer',
       action: 'Reconciled repeated-course records for MTH 301',
       time: 'Today, 11:04',
     ),

@@ -4,25 +4,19 @@ import '../../core/auth/auth_session.dart';
 import '../../data/mock_admin_repository.dart';
 import '../../models/admin_role.dart';
 import '../../models/dashboard_models.dart';
-import 'workspaces/academic_records_overview_panel.dart';
 import '../academic_setup/widgets/academic_setup_panel.dart';
 import 'workspaces/cohort_management_panel.dart';
 import 'workspaces/course_registration_approval_panel.dart';
 import 'workspaces/departmental_exam_officer_overview_panel.dart';
-import 'workspaces/dlc_director_overview_panel.dart';
 import 'workspaces/exam_management_panel.dart';
 import 'workspaces/exam_sessions_overview_panel.dart';
 import 'workspaces/hod_department_overview_panel.dart';
-import 'workspaces/invigilator_evidence_review_panel.dart';
 import 'workspaces/lecturer_assignments_marking_panel.dart';
 import 'workspaces/lecturer_course_delivery_flow_panel.dart';
 import 'workspaces/lecturer_course_overview_panel.dart';
-import 'workspaces/level_adviser_overview_panel.dart';
 import 'workspaces/moderator_question_review_panel.dart';
-import 'workspaces/records_department_panel.dart';
-import 'workspaces/reports_analytics_panel.dart';
+import 'workspaces/student_records_panel.dart';
 import 'workspaces/results_approval_release_panel.dart';
-import 'workspaces/student_support_helpdesk_panel.dart';
 import '../staff_management/widgets/staff_management_panel.dart';
 import '../lecturer_questions/widgets/lecturer_question_live_panel.dart';
 import 'widgets/admin_metric_card.dart';
@@ -44,7 +38,6 @@ const _hodPages = [
   _OpsPage('Department Overview', Icons.dashboard_outlined),
   _OpsPage('Lecturers', Icons.school_outlined),
   _OpsPage('Courses', Icons.menu_book_outlined),
-  _OpsPage('Level Coordinators', Icons.supervisor_account_outlined),
   _OpsPage('Students', Icons.groups_2_outlined),
   _OpsPage('Course Materials', Icons.cloud_upload_outlined),
   _OpsPage('Assessment & Exams', Icons.assignment_outlined),
@@ -65,19 +58,6 @@ const _lecturerPages = [
   _OpsPage('Marking & Grading', Icons.edit_note_outlined),
   _OpsPage('Results Submission', Icons.publish_outlined),
   _OpsPage('Messages / Q&A', Icons.forum_outlined),
-  _OpsPage('Profile', Icons.person_outline),
-];
-
-const _levelAdviserPages = [
-  _OpsPage('Overview', Icons.dashboard_outlined),
-  _OpsPage('My Students', Icons.groups_2_outlined),
-  _OpsPage('Course Registration', Icons.app_registration_outlined),
-  _OpsPage('Student Progress', Icons.trending_up_outlined),
-  _OpsPage('Attendance & Participation', Icons.fact_check_outlined),
-  _OpsPage('Exam Eligibility', Icons.assignment_turned_in_outlined),
-  _OpsPage('Complaints', Icons.support_agent_outlined),
-  _OpsPage('Messages / Announcements', Icons.campaign_outlined),
-  _OpsPage('Reports', Icons.analytics_outlined),
   _OpsPage('Profile', Icons.person_outline),
 ];
 
@@ -103,69 +83,15 @@ const _moderatorPages = [
   _OpsPage('Profile', Icons.person_outline),
 ];
 
-const _invigilatorPages = [
-  _OpsPage('Live Student Grid', Icons.grid_view_outlined),
-  _OpsPage('AI Alert Queue', Icons.notification_important_outlined),
-  _OpsPage('Evidence Review', Icons.perm_media_outlined),
-  _OpsPage('Manual Decisions', Icons.fact_check_outlined),
-  _OpsPage('Student Session Detail', Icons.person_search_outlined),
-  _OpsPage('Room Scan Requests', Icons.video_camera_front_outlined),
-  _OpsPage('Attendance & Check-in', Icons.how_to_reg_outlined),
-  _OpsPage('Risk Timeline', Icons.timeline_outlined),
-  _OpsPage('Malpractice Drafts', Icons.gpp_maybe_outlined),
-  _OpsPage('Evidence Sync Status', Icons.cloud_sync_outlined),
-  _OpsPage('Audit Trail', Icons.manage_history_outlined),
-];
-
-const _academicRecordsPages = [
-  _OpsPage('Student Records', Icons.badge_outlined),
-  _OpsPage('Admission / Matriculation', Icons.how_to_reg_outlined),
-  _OpsPage('Course Registration Records', Icons.app_registration_outlined),
-  _OpsPage('Programme & Level Records', Icons.account_tree_outlined),
-  _OpsPage('Result Records', Icons.workspace_premium_outlined),
-  _OpsPage('Carryover / Repeat Courses', Icons.repeat_outlined),
-  _OpsPage('Academic Standing', Icons.trending_up_outlined),
-  _OpsPage('Transcript Records', Icons.description_outlined),
-  _OpsPage('Graduation / Clearance', Icons.verified_outlined),
-  _OpsPage('Corrections & Audit Trail', Icons.manage_history_outlined),
-  _OpsPage('Reports', Icons.analytics_outlined),
-  _OpsPage('Profile', Icons.person_outline),
-];
-
-const _supportPages = [
-  _OpsPage('Support Dashboard', Icons.support_agent_outlined),
-  _OpsPage('Open Tickets', Icons.mark_unread_chat_alt_outlined),
-  _OpsPage('Academic Support Routing', Icons.alt_route_outlined),
-  _OpsPage('Technical Issues', Icons.build_circle_outlined),
-  _OpsPage('SLA Activity', Icons.timer_outlined),
-  _OpsPage('Support Settings', Icons.settings_outlined),
-];
-
-const _reportPages = [
-  _OpsPage('Reports Dashboard', Icons.analytics_outlined),
-  _OpsPage('Management Reports', Icons.summarize_outlined),
-  _OpsPage('Student Participation', Icons.groups_2_outlined),
-  _OpsPage('Lecturer Performance', Icons.school_outlined),
-  _OpsPage('Course Readiness', Icons.fact_check_outlined),
-  _OpsPage('Exports', Icons.download_outlined),
-];
-
 bool _usesSectionOnlyWorkspace(AdminRole role) {
   switch (role) {
-    case AdminRole.dlcDirector:
-    case AdminRole.departmentAdmin:
-    case AdminRole.facultyAdmin:
     case AdminRole.hod:
     case AdminRole.moderator:
     case AdminRole.lecturer:
-    case AdminRole.levelAdviser:
     case AdminRole.examOfficer:
-    case AdminRole.invigilator:
-    case AdminRole.recordsDepartment:
-    case AdminRole.supportTeam:
-    case AdminRole.reportsTeam:
-    case AdminRole.superAdmin:
       return true;
+    case AdminRole.ictAdmin:
+      return false;
   }
 }
 
@@ -176,26 +102,11 @@ List<_OpsPage> _pagesForRole(AdminRole role) {
   if (role == AdminRole.lecturer) {
     return _lecturerPages;
   }
-  if (role == AdminRole.levelAdviser) {
-    return _levelAdviserPages;
-  }
   if (role == AdminRole.examOfficer) {
     return _examOfficerPages;
   }
   if (role == AdminRole.moderator) {
     return _moderatorPages;
-  }
-  if (role == AdminRole.invigilator) {
-    return _invigilatorPages;
-  }
-  if (role == AdminRole.recordsDepartment) {
-    return _academicRecordsPages;
-  }
-  if (role == AdminRole.supportTeam) {
-    return _supportPages;
-  }
-  if (role == AdminRole.reportsTeam) {
-    return _reportPages;
   }
   return _operationsPages;
 }
@@ -210,31 +121,10 @@ String _workspaceTitleForRole(AdminRole role) {
   if (role == AdminRole.moderator) {
     return 'Moderator';
   }
-  if (role == AdminRole.moderator) {
-    return 'Moderator';
-  }
-  if (role == AdminRole.levelAdviser) {
-    return 'Level Adviser Workspace';
-  }
   if (role == AdminRole.examOfficer) {
-    return 'Departmental Exam Officer';
+    return 'Exam Officer';
   }
-  if (role == AdminRole.invigilator) {
-    return 'Invigilator Dashboard';
-  }
-  if (role == AdminRole.recordsDepartment) {
-    return 'Academic Records';
-  }
-  if (role == AdminRole.supportTeam) {
-    return 'Support Team Workspace';
-  }
-  if (role == AdminRole.reportsTeam) {
-    return 'Reports Team Workspace';
-  }
-  if (role == AdminRole.dlcDirector) {
-    return 'DLC Director';
-  }
-  return 'KSLAS Admin';
+  return 'General ICT Admin';
 }
 
 String _workspaceSubtitleForRole(AdminRole role) {
@@ -247,31 +137,10 @@ String _workspaceSubtitleForRole(AdminRole role) {
   if (role == AdminRole.moderator) {
     return 'Question review and quality checks';
   }
-  if (role == AdminRole.moderator) {
-    return 'Question review and quality checks';
-  }
-  if (role == AdminRole.levelAdviser) {
-    return 'Assigned level student monitoring';
-  }
   if (role == AdminRole.examOfficer) {
     return 'Operational department exam coordination';
   }
-  if (role == AdminRole.invigilator) {
-    return 'Assigned exam monitoring, evidence review, check-in, and incident decisions only';
-  }
-  if (role == AdminRole.recordsDepartment) {
-    return 'Official student academic records custody';
-  }
-  if (role == AdminRole.supportTeam) {
-    return 'Private support and helpdesk route';
-  }
-  if (role == AdminRole.reportsTeam) {
-    return 'Private reports and analytics route';
-  }
-  if (role == AdminRole.dlcDirector) {
-    return 'Distance Learning command centre';
-  }
-  return 'Non-student operations';
+  return 'Ahmadu Bello University, Zaria';
 }
 
 IconData _workspaceIconForRole(AdminRole role) {
@@ -284,29 +153,8 @@ IconData _workspaceIconForRole(AdminRole role) {
   if (role == AdminRole.moderator) {
     return Icons.rule_folder_outlined;
   }
-  if (role == AdminRole.moderator) {
-    return Icons.rule_folder_outlined;
-  }
-  if (role == AdminRole.levelAdviser) {
-    return Icons.person_search_outlined;
-  }
   if (role == AdminRole.examOfficer) {
     return Icons.assignment_turned_in_outlined;
-  }
-  if (role == AdminRole.invigilator) {
-    return Icons.verified_user_outlined;
-  }
-  if (role == AdminRole.recordsDepartment) {
-    return Icons.badge_outlined;
-  }
-  if (role == AdminRole.supportTeam) {
-    return Icons.support_agent_outlined;
-  }
-  if (role == AdminRole.reportsTeam) {
-    return Icons.analytics_outlined;
-  }
-  if (role == AdminRole.dlcDirector) {
-    return Icons.cast_for_education_outlined;
   }
   return Icons.account_balance_outlined;
 }
@@ -333,7 +181,7 @@ class _AdminOperationsShellState extends State<AdminOperationsShell> {
   @override
   void initState() {
     super.initState();
-    _selectedRole = widget.initialRole ?? AdminRole.dlcDirector;
+    _selectedRole = widget.initialRole ?? AdminRole.ictAdmin;
   }
 
   @override
@@ -343,7 +191,7 @@ class _AdminOperationsShellState extends State<AdminOperationsShell> {
     return Scaffold(
       appBar: compact
           ? AppBar(
-              title: const Text('KSLAS Admin'),
+              title: const Text('ABU CBT Admin'),
               actions: [
                 IconButton(
                   onPressed: () {},
@@ -357,8 +205,21 @@ class _AdminOperationsShellState extends State<AdminOperationsShell> {
               ],
             )
           : null,
-      drawer: compact && !widget.lockRole
-          ? _RoleDrawer(selectedRole: _selectedRole, onRoleChanged: _changeRole)
+      drawer: compact
+          ? Drawer(
+              child: _AdminSideBar(
+                selectedPage: _selectedPage,
+                selectedRole: _selectedRole,
+                pages: pages,
+                onPageChanged: (value) {
+                  setState(() => _selectedPage = value);
+                  Navigator.of(context).pop();
+                },
+                onRoleChanged: _changeRole,
+                lockRole: widget.lockRole,
+                onLogout: _signOut,
+              ),
+            )
           : null,
       body: Row(
         children: [
@@ -434,56 +295,58 @@ class _AdminSideBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      width: 310,
+    return Material(
       color: scheme.surfaceContainerLow,
-      child: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(12, 14, 12, 18),
-          children: [
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor: scheme.primary,
-                foregroundColor: scheme.onPrimary,
-                child: Icon(_workspaceIconForRole(selectedRole)),
-              ),
-              title: Text(
-                _workspaceTitleForRole(selectedRole),
-                style: const TextStyle(fontWeight: FontWeight.w900),
-              ),
-              subtitle: Text(_workspaceSubtitleForRole(selectedRole)),
-              trailing: IconButton(
-                tooltip: 'Sign out',
-                onPressed: onLogout,
-                icon: const Icon(Icons.logout_outlined),
-              ),
-            ),
-            const SizedBox(height: 10),
-            if (!lockRole) ...[
-              DropdownButtonFormField<AdminRole>(
-                initialValue: selectedRole,
-                decoration: const InputDecoration(
-                  labelText: 'Workspace role',
-                  prefixIcon: Icon(Icons.admin_panel_settings_outlined),
+      child: SizedBox(
+        width: 310,
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(12, 14, 12, 18),
+            children: [
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: scheme.primary,
+                  foregroundColor: scheme.onPrimary,
+                  child: Icon(_workspaceIconForRole(selectedRole)),
                 ),
-                items: [
-                  for (final role in AdminRole.values)
-                    DropdownMenuItem(value: role, child: Text(role.label)),
-                ],
-                onChanged: (role) {
-                  if (role != null) onRoleChanged(role);
-                },
+                title: Text(
+                  _workspaceTitleForRole(selectedRole),
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+                subtitle: Text(_workspaceSubtitleForRole(selectedRole)),
+                trailing: IconButton(
+                  tooltip: 'Sign out',
+                  onPressed: onLogout,
+                  icon: const Icon(Icons.logout_outlined),
+                ),
               ),
-              const SizedBox(height: 16),
-            ] else
-              const SizedBox(height: 16),
-            for (var i = 0; i < pages.length; i++)
-              _NavigationTile(
-                page: pages[i],
-                selected: selectedPage == i,
-                onTap: () => onPageChanged(i),
-              ),
-          ],
+              const SizedBox(height: 10),
+              if (!lockRole) ...[
+                DropdownButtonFormField<AdminRole>(
+                  initialValue: selectedRole,
+                  decoration: const InputDecoration(
+                    labelText: 'Workspace role',
+                    prefixIcon: Icon(Icons.admin_panel_settings_outlined),
+                  ),
+                  items: [
+                    for (final role in AdminRole.values)
+                      DropdownMenuItem(value: role, child: Text(role.label)),
+                  ],
+                  onChanged: (role) {
+                    if (role != null) onRoleChanged(role);
+                  },
+                ),
+                const SizedBox(height: 16),
+              ] else
+                const SizedBox(height: 16),
+              for (var i = 0; i < pages.length; i++)
+                _NavigationTile(
+                  page: pages[i],
+                  selected: selectedPage == i,
+                  onTap: () => onPageChanged(i),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -510,46 +373,6 @@ class _NavigationTile extends StatelessWidget {
       leading: Icon(page.icon),
       title: Text(page.label),
       onTap: onTap,
-    );
-  }
-}
-
-class _RoleDrawer extends StatelessWidget {
-  const _RoleDrawer({required this.selectedRole, required this.onRoleChanged});
-
-  final AdminRole selectedRole;
-  final ValueChanged<AdminRole> onRoleChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      child: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              'Switch workspace',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
-            for (final role in AdminRole.values)
-              RadioListTile<AdminRole>(
-                value: role,
-                // ignore: deprecated_member_use
-                groupValue: selectedRole,
-                // ignore: deprecated_member_use
-                onChanged: (role) {
-                  if (role != null) {
-                    onRoleChanged(role);
-                    Navigator.of(context).maybePop();
-                  }
-                },
-                title: Text(role.label),
-                subtitle: Text(role.scope),
-              ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -660,31 +483,6 @@ class _PrimaryPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (selectedRole == AdminRole.supportTeam &&
-        _supportPages.any((page) => page.label == pageLabel)) {
-      return const StudentSupportHelpdeskPanel();
-    }
-    if (selectedRole == AdminRole.reportsTeam &&
-        _reportPages.any((page) => page.label == pageLabel)) {
-      return const ReportsAnalyticsPanel();
-    }
-
-    if (selectedRole == AdminRole.levelAdviser) {
-      if (pageLabel == 'Overview') {
-        return const LevelAdviserOverviewPanel();
-      }
-      if (pageLabel == 'My Students' ||
-          pageLabel == 'Student Progress' ||
-          pageLabel == 'Attendance & Participation' ||
-          pageLabel == 'Exam Eligibility') {
-        return const RecordsDepartmentPanel();
-      }
-      if (pageLabel == 'Course Registration') {
-        return const CourseRegistrationApprovalPanel();
-      }
-      return _TaskPanel(tasks: tasks);
-    }
-
     if (selectedRole == AdminRole.lecturer) {
       if (pageLabel == 'My Courses') {
         return const LecturerCourseOverviewPanel();
@@ -726,13 +524,6 @@ class _PrimaryPanel extends StatelessWidget {
       );
     }
 
-    if (selectedRole == AdminRole.invigilator) {
-      if (_invigilatorPages.any((page) => page.label == pageLabel)) {
-        return InvigilatorEvidenceReviewPanel(section: pageLabel);
-      }
-      return _TaskPanel(tasks: tasks);
-    }
-
     if (selectedRole == AdminRole.examOfficer) {
       if (pageLabel == 'Exam Overview') {
         return const DepartmentalExamOfficerOverviewPanel();
@@ -755,29 +546,6 @@ class _PrimaryPanel extends StatelessWidget {
       return _TaskPanel(tasks: tasks);
     }
 
-    if (selectedRole == AdminRole.recordsDepartment) {
-      if (pageLabel == 'Student Records') {
-        return const AcademicRecordsOverviewPanel();
-      }
-      if (pageLabel == 'Course Registration Records' ||
-          pageLabel == 'Programme & Level Records' ||
-          pageLabel == 'Carryover / Repeat Courses' ||
-          pageLabel == 'Academic Standing' ||
-          pageLabel == 'Transcript Records' ||
-          pageLabel == 'Graduation / Clearance' ||
-          pageLabel == 'Corrections & Audit Trail') {
-        return const RecordsDepartmentPanel();
-      }
-      if (pageLabel == 'Result Records') {
-        return const ResultsApprovalReleasePanel();
-      }
-      return _TaskPanel(tasks: tasks);
-    }
-
-    if (selectedRole == AdminRole.dlcDirector &&
-        _operationsPages.any((page) => page.label == pageLabel)) {
-      return DlcDirectorSectionPanel(section: pageLabel);
-    }
     if (pageLabel == 'Department Overview') {
       return const HodDepartmentOverviewPanel();
     }
@@ -788,7 +556,7 @@ class _PrimaryPanel extends StatelessWidget {
       return const CohortManagementPanel();
     }
     if (pageLabel == 'Students') {
-      return const RecordsDepartmentPanel();
+      return const StudentRecordsPanel();
     }
     if (pageLabel == 'Course Management') {
       return const AcademicSetupPanel();
@@ -811,11 +579,8 @@ class _PrimaryPanel extends StatelessWidget {
     if (pageLabel == 'System Activity') {
       return const ExamSessionsOverviewPanel();
     }
-    if (pageLabel == 'Level Coordinators') {
-      return const CohortManagementPanel();
-    }
     if (pageLabel == 'Records') {
-      return const RecordsDepartmentPanel();
+      return const StudentRecordsPanel();
     }
     if (pageLabel == 'Approvals') {
       return const ModeratorQuestionReviewPanel(

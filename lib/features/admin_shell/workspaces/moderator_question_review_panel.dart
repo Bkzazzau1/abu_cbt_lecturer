@@ -317,6 +317,7 @@ class _ModeratorQuestionReviewPanelState
                       width: 210,
                       child: DropdownButtonFormField<String>(
                         initialValue: _selectedWindow,
+                        isExpanded: true,
                         decoration: const InputDecoration(
                           labelText: 'Exam window',
                         ),

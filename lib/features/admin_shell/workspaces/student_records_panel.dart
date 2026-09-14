@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class RecordsDepartmentPanel extends StatelessWidget {
-  const RecordsDepartmentPanel({super.key});
+class StudentRecordsPanel extends StatelessWidget {
+  const StudentRecordsPanel({super.key});
 
   static const _records = [
     _StudentRecord(

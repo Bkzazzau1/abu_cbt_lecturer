@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "kslas_admin_ui" "\0"
+            VALUE "FileDescription", "abu_cbt_admin" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "kslas_admin_ui" "\0"
+            VALUE "InternalName", "abu_cbt_admin" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "kslas_admin_ui.exe" "\0"
-            VALUE "ProductName", "kslas_admin_ui" "\0"
+            VALUE "OriginalFilename", "abu_cbt_admin.exe" "\0"
+            VALUE "ProductName", "abu_cbt_admin" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

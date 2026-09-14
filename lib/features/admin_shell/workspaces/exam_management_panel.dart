@@ -68,9 +68,9 @@ class _ExamManagementPanelState extends State<ExamManagementPanel> {
       await _load();
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
     } finally {
       if (mounted) setState(() => _busyExamId = null);
     }
@@ -114,7 +114,9 @@ class _ExamManagementPanelState extends State<ExamManagementPanel> {
   Future<void> _scheduleDialog(ExamWorkflowItem item) async {
     final start = DateTime.now().toUtc().add(const Duration(days: 3));
     final end = start.add(const Duration(hours: 2));
-    final startController = TextEditingController(text: start.toIso8601String());
+    final startController = TextEditingController(
+      text: start.toIso8601String(),
+    );
     final endController = TextEditingController(text: end.toIso8601String());
     final durationController = TextEditingController(
       text: item.durationMinutes > 0 ? item.durationMinutes.toString() : '120',
@@ -122,7 +124,9 @@ class _ExamManagementPanelState extends State<ExamManagementPanel> {
     final venueController = TextEditingController(
       text: item.venue.isNotEmpty ? item.venue : 'Remote Proctored Exam',
     );
-    final commentController = TextEditingController(text: 'Exam scheduled for student access.');
+    final commentController = TextEditingController(
+      text: 'Exam scheduled for student access.',
+    );
 
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -139,14 +143,20 @@ class _ExamManagementPanelState extends State<ExamManagementPanel> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (errorText != null) ...[
-                      Text(errorText!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                      Text(
+                        errorText!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
                       const SizedBox(height: 10),
                     ],
                     TextField(
                       controller: startController,
                       decoration: const InputDecoration(
                         labelText: 'Start time',
-                        helperText: 'Use ISO time, for example 2026-06-26T09:00:00Z',
+                        helperText:
+                            'Use ISO time, for example 2026-06-26T09:00:00Z',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -195,12 +205,22 @@ class _ExamManagementPanelState extends State<ExamManagementPanel> {
                 ),
                 FilledButton(
                   onPressed: () {
-                    final startAt = DateTime.tryParse(startController.text.trim());
+                    final startAt = DateTime.tryParse(
+                      startController.text.trim(),
+                    );
                     final endAt = DateTime.tryParse(endController.text.trim());
-                    final duration = int.tryParse(durationController.text.trim());
+                    final duration = int.tryParse(
+                      durationController.text.trim(),
+                    );
 
-                    if (startAt == null || endAt == null || duration == null || !endAt.isAfter(startAt)) {
-                      setDialogState(() => errorText = 'Please enter valid exam time and duration.');
+                    if (startAt == null ||
+                        endAt == null ||
+                        duration == null ||
+                        !endAt.isAfter(startAt)) {
+                      setDialogState(
+                        () => errorText =
+                            'Please enter valid exam time and duration.',
+                      );
                       return;
                     }
 
@@ -308,7 +328,8 @@ class _ExamManagementPanelState extends State<ExamManagementPanel> {
                   'released',
                 ])
                   _FilterChip(
-                    label: '${_statusLabel(status)} ${_items.where((e) => e.status == status).length}',
+                    label:
+                        '${_statusLabel(status)} ${_items.where((e) => e.status == status).length}',
                     selected: _filter == status,
                     onSelected: () => setState(() => _filter = status),
                   ),
@@ -353,7 +374,8 @@ class _ExamManagementPanelState extends State<ExamManagementPanel> {
                     item,
                     title: 'Send Back to Lecturer',
                     hint: 'Explain the correction needed.',
-                    action: (comment) => _api.sendBackToLecturer(item.id, comment),
+                    action: (comment) =>
+                        _api.sendBackToLecturer(item.id, comment),
                   ),
                   onSchedule: () => _scheduleDialog(item),
                   onRelease: () => _withComment(
@@ -378,7 +400,6 @@ class _ExamManagementPanelState extends State<ExamManagementPanel> {
         .join(' ');
   }
 }
-
 
 String _humanLabel(String value) {
   return value
@@ -441,7 +462,9 @@ class _ExamWorkflowTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      item.courseLabel.isEmpty ? 'Course not shown' : item.courseLabel,
+                      item.courseLabel.isEmpty
+                          ? 'Course not shown'
+                          : item.courseLabel,
                       style: TextStyle(color: scheme.onSurfaceVariant),
                     ),
                   ],
@@ -476,7 +499,9 @@ class _ExamWorkflowTile extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'Review notes',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w900),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 6),
             for (final note in item.workflowNotes.take(4))
@@ -496,7 +521,8 @@ class _ExamWorkflowTile extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                if (item.status == 'draft' || item.status == 'lecturer_correction')
+                if (item.status == 'draft' ||
+                    item.status == 'lecturer_correction')
                   OutlinedButton.icon(
                     onPressed: onSubmitToOfficer,
                     icon: const Icon(Icons.outbox_outlined),
@@ -514,13 +540,16 @@ class _ExamWorkflowTile extends StatelessWidget {
                     icon: const Icon(Icons.assignment_return_outlined),
                     label: const Text('Return with Notes'),
                   ),
-                if (item.status == 'moderated' || item.status == 'officer_review')
+                if (item.status == 'moderated' ||
+                    item.status == 'officer_review')
                   OutlinedButton.icon(
                     onPressed: onSendBackToLecturer,
                     icon: const Icon(Icons.reply_all_outlined),
                     label: const Text('Send Back to Lecturer'),
                   ),
-                if (item.status == 'moderated' || item.status == 'officer_review' || item.status == 'lecturer_correction')
+                if (item.status == 'moderated' ||
+                    item.status == 'officer_review' ||
+                    item.status == 'lecturer_correction')
                   FilledButton.icon(
                     onPressed: onSchedule,
                     icon: const Icon(Icons.event_available_outlined),
@@ -640,7 +669,13 @@ class _ErrorBox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Could not load exams', style: TextStyle(color: scheme.onErrorContainer, fontWeight: FontWeight.w900)),
+          Text(
+            'Could not load exams',
+            style: TextStyle(
+              color: scheme.onErrorContainer,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
           const SizedBox(height: 6),
           Text(message, style: TextStyle(color: scheme.onErrorContainer)),
           const SizedBox(height: 10),
@@ -658,9 +693,7 @@ class _EmptyBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.all(24),
-      child: Center(
-        child: Text('No exams found for this view.'),
-      ),
+      child: Center(child: Text('No exams found for this view.')),
     );
   }
 }

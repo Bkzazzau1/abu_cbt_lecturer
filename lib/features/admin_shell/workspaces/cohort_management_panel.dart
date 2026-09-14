@@ -28,12 +28,12 @@ class _CohortManagementPanelState extends State<CohortManagementPanel> {
       resultMapping: 'Mapped',
     ),
     _CohortRecord(
-      name: 'B.Sc Software Engineering 2024 DLC',
-      cohortId: 'cohort-bsc-se-2024-dlc',
-      programme: 'B.Sc Software Engineering DLC',
-      department: 'DLC Computing',
+      name: 'B.Sc Software Engineering 2024 ABU',
+      cohortId: 'cohort-bsc-se-2024-abu',
+      programme: 'B.Sc Software Engineering ABU',
+      department: 'ABU Computing',
       intakeYear: 2024,
-      mode: 'Distance Learning',
+      mode: 'University',
       level: 200,
       semester: 3,
       students: 482,
@@ -77,18 +77,18 @@ class _CohortManagementPanelState extends State<CohortManagementPanel> {
   static const _actions = [
     _CohortAction(
       title: 'Course registration rules pending',
-      cohortId: 'cohort-bsc-se-2024-dlc',
+      cohortId: 'cohort-bsc-se-2024-abu',
       owner: 'Department Admin',
       detail:
-          'DLC semester 3 credit load and elective rules must be confirmed before registration opens.',
+          'ABU semester 3 credit load and elective rules must be confirmed before registration opens.',
       severity: 'High',
     ),
     _CohortAction(
       title: 'Result mapping review',
-      cohortId: 'cohort-bsc-se-2024-dlc',
+      cohortId: 'cohort-bsc-se-2024-abu',
       owner: 'Records Department',
       detail:
-          'Repeat/carryover mapping for DLC students needs records confirmation.',
+          'Repeat/carryover mapping for ABU students needs records confirmation.',
       severity: 'Medium',
     ),
     _CohortAction(
@@ -154,7 +154,7 @@ class _CohortManagementPanelState extends State<CohortManagementPanel> {
                   icon: Icons.schedule_outlined,
                 ),
                 _CohortChip(
-                  label: 'DLC: 9',
+                  label: 'ABU: 9',
                   icon: Icons.cast_for_education_outlined,
                 ),
                 _CohortChip(
@@ -184,8 +184,8 @@ class _CohortManagementPanelState extends State<CohortManagementPanel> {
                         child: Text('Part-Time'),
                       ),
                       DropdownMenuItem(
-                        value: 'Distance Learning',
-                        child: Text('Distance Learning'),
+                        value: 'University',
+                        child: Text('University'),
                       ),
                       DropdownMenuItem(value: 'Shared', child: Text('Shared')),
                     ],

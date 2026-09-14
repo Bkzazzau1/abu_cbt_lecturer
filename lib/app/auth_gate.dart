@@ -26,7 +26,9 @@ class _AuthGateState extends State<AuthGate> {
       future: _loadFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
         return AnimatedBuilder(
           animation: AuthSession.instance,

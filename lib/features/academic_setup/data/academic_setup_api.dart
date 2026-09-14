@@ -18,7 +18,10 @@ class AcademicSetupApi {
       departments: _list(results[1]).map(AcademicDepartment.fromJson).toList(),
       programmes: _list(results[2]).map(AcademicProgramme.fromJson).toList(),
       courses: _list(results[3]).map(AcademicCourse.fromJson).toList(),
-      lecturers: _list(results[4]).map(AcademicStaff.fromJson).where((staff) => staff.role == 'lecturer' && staff.active).toList(),
+      lecturers: _list(results[4])
+          .map(AcademicStaff.fromJson)
+          .where((staff) => staff.role == 'lecturer' && staff.active)
+          .toList(),
     );
   }
 
@@ -38,22 +41,37 @@ class AcademicSetupApi {
     await _client.post('/api/courses', body: payload);
   }
 
-  Future<void> assignLecturer({required String courseId, required String lecturerId}) async {
-    await _client.post('/api/courses/$courseId/lecturers', body: {'lecturer_id': int.tryParse(lecturerId) ?? lecturerId});
+  Future<void> assignLecturer({
+    required String courseId,
+    required String lecturerId,
+  }) async {
+    await _client.post(
+      '/api/courses/$courseId/lecturers',
+      body: {'lecturer_id': int.tryParse(lecturerId) ?? lecturerId},
+    );
   }
 
   List<Map<String, dynamic>> _list(dynamic data) {
     dynamic rows = data;
     if (data is Map) rows = data['items'] ?? data['data'] ?? data['results'];
     if (rows is! List) return const [];
-    return rows.whereType<Map>().map((raw) => raw.map((key, value) => MapEntry(key.toString(), value))).toList();
+    return rows
+        .whereType<Map>()
+        .map((raw) => raw.map((key, value) => MapEntry(key.toString(), value)))
+        .toList();
   }
 
   void close() => _client.close();
 }
 
 class AcademicSetupData {
-  const AcademicSetupData({required this.faculties, required this.departments, required this.programmes, required this.courses, required this.lecturers});
+  const AcademicSetupData({
+    required this.faculties,
+    required this.departments,
+    required this.programmes,
+    required this.courses,
+    required this.lecturers,
+  });
 
   final List<AcademicFaculty> faculties;
   final List<AcademicDepartment> departments;
@@ -63,37 +81,54 @@ class AcademicSetupData {
 }
 
 class AcademicFaculty {
-  const AcademicFaculty({required this.id, required this.name, required this.code});
+  const AcademicFaculty({
+    required this.id,
+    required this.name,
+    required this.code,
+  });
 
   final String id;
   final String name;
   final String code;
 
-  factory AcademicFaculty.fromJson(Map<String, dynamic> json) => AcademicFaculty(
-    id: json['id']?.toString() ?? '',
-    name: json['name']?.toString() ?? 'Unnamed faculty',
-    code: json['code']?.toString() ?? '',
-  );
+  factory AcademicFaculty.fromJson(Map<String, dynamic> json) =>
+      AcademicFaculty(
+        id: json['id']?.toString() ?? '',
+        name: json['name']?.toString() ?? 'Unnamed faculty',
+        code: json['code']?.toString() ?? '',
+      );
 }
 
 class AcademicDepartment {
-  const AcademicDepartment({required this.id, required this.facultyId, required this.name, required this.code});
+  const AcademicDepartment({
+    required this.id,
+    required this.facultyId,
+    required this.name,
+    required this.code,
+  });
 
   final String id;
   final String facultyId;
   final String name;
   final String code;
 
-  factory AcademicDepartment.fromJson(Map<String, dynamic> json) => AcademicDepartment(
-    id: json['id']?.toString() ?? '',
-    facultyId: json['faculty_id']?.toString() ?? '',
-    name: json['name']?.toString() ?? 'Unnamed department',
-    code: json['code']?.toString() ?? '',
-  );
+  factory AcademicDepartment.fromJson(Map<String, dynamic> json) =>
+      AcademicDepartment(
+        id: json['id']?.toString() ?? '',
+        facultyId: json['faculty_id']?.toString() ?? '',
+        name: json['name']?.toString() ?? 'Unnamed department',
+        code: json['code']?.toString() ?? '',
+      );
 }
 
 class AcademicProgramme {
-  const AcademicProgramme({required this.id, required this.departmentId, required this.name, required this.code, required this.levelType});
+  const AcademicProgramme({
+    required this.id,
+    required this.departmentId,
+    required this.name,
+    required this.code,
+    required this.levelType,
+  });
 
   final String id;
   final String departmentId;
@@ -101,17 +136,28 @@ class AcademicProgramme {
   final String code;
   final String levelType;
 
-  factory AcademicProgramme.fromJson(Map<String, dynamic> json) => AcademicProgramme(
-    id: json['id']?.toString() ?? '',
-    departmentId: json['department_id']?.toString() ?? '',
-    name: json['name']?.toString() ?? 'Unnamed programme',
-    code: json['code']?.toString() ?? '',
-    levelType: json['level_type']?.toString() ?? '',
-  );
+  factory AcademicProgramme.fromJson(Map<String, dynamic> json) =>
+      AcademicProgramme(
+        id: json['id']?.toString() ?? '',
+        departmentId: json['department_id']?.toString() ?? '',
+        name: json['name']?.toString() ?? 'Unnamed programme',
+        code: json['code']?.toString() ?? '',
+        levelType: json['level_type']?.toString() ?? '',
+      );
 }
 
 class AcademicCourse {
-  const AcademicCourse({required this.id, required this.departmentId, required this.programmeId, required this.title, required this.code, required this.unit, required this.semester, required this.level, required this.active});
+  const AcademicCourse({
+    required this.id,
+    required this.departmentId,
+    required this.programmeId,
+    required this.title,
+    required this.code,
+    required this.unit,
+    required this.semester,
+    required this.level,
+    required this.active,
+  });
 
   final String id;
   final String departmentId;
@@ -137,7 +183,13 @@ class AcademicCourse {
 }
 
 class AcademicStaff {
-  const AcademicStaff({required this.id, required this.name, required this.email, required this.role, required this.active});
+  const AcademicStaff({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.role,
+    required this.active,
+  });
 
   final String id;
   final String name;
@@ -148,11 +200,19 @@ class AcademicStaff {
   factory AcademicStaff.fromJson(Map<String, dynamic> json) {
     final roles = json['roles'];
     String role = json['primary_role']?.toString() ?? '';
-    if (role.isEmpty && roles is List && roles.isNotEmpty && roles.first is Map) {
-      final firstRole = (roles.first as Map).map((key, value) => MapEntry(key.toString(), value));
+    if (role.isEmpty &&
+        roles is List &&
+        roles.isNotEmpty &&
+        roles.first is Map) {
+      final firstRole = (roles.first as Map).map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
       role = firstRole['code']?.toString() ?? '';
     }
-    final name = [json['first_name']?.toString() ?? '', json['last_name']?.toString() ?? ''].where((part) => part.trim().isNotEmpty).join(' ');
+    final name = [
+      json['first_name']?.toString() ?? '',
+      json['last_name']?.toString() ?? '',
+    ].where((part) => part.trim().isNotEmpty).join(' ');
     return AcademicStaff(
       id: json['id']?.toString() ?? '',
       name: name.isEmpty ? 'Unnamed staff' : name,

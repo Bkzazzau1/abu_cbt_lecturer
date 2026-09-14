@@ -86,7 +86,7 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Use your K-SLAS staff account to continue.',
+                              'Ahmadu Bello University, Zaria. Sign in with your staff account.',
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(color: scheme.onSurfaceVariant),
                             ),
@@ -216,7 +216,7 @@ class _BrandPanel extends StatelessWidget {
           ),
           const SizedBox(height: 28),
           Text(
-            'K-SLAS Administration',
+            'ABU CBT Admin',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               color: scheme.onPrimary,
               fontWeight: FontWeight.w900,
@@ -224,7 +224,7 @@ class _BrandPanel extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Manage lecturers, questions, assessments, CA, marked scripts, and live work alerts from one secure console.',
+            'Ahmadu Bello University, Zaria. Manage CBT questions, moderation, examinations, results, and staff access.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: scheme.onPrimary.withValues(alpha: 0.88),
               height: 1.45,
@@ -235,10 +235,11 @@ class _BrandPanel extends StatelessWidget {
             spacing: 10,
             runSpacing: 10,
             children: const [
-              _BrandChip(label: 'Lecturer workflow'),
+              _BrandChip(label: 'Lecturer'),
+              _BrandChip(label: 'Moderator'),
               _BrandChip(label: 'Exam Officer'),
-              _BrandChip(label: 'Live alerts'),
-              _BrandChip(label: 'Analytics'),
+              _BrandChip(label: 'HoD'),
+              _BrandChip(label: 'General ICT Admin'),
             ],
           ),
         ],

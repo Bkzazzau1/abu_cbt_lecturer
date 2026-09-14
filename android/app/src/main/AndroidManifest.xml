@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="kslas_admin_ui"
+        android:label="ABU CBT Admin"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

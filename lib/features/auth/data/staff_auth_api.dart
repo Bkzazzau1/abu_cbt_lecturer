@@ -5,13 +5,18 @@ class StaffAuthApi {
 
   final ApiClient _client;
 
-  Future<Map<String, dynamic>> login({required String email, required String password}) async {
+  Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
     final data = await _client.post(
       '/api/auth/login',
       body: {'identity': email.trim(), 'password': password},
     );
     if (data is Map<String, dynamic>) return data;
-    if (data is Map) return data.map((key, value) => MapEntry(key.toString(), value));
+    if (data is Map) {
+      return data.map((key, value) => MapEntry(key.toString(), value));
+    }
     throw const ApiException('Unexpected login response');
   }
 

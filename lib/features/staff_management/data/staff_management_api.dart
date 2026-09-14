@@ -1,3 +1,4 @@
+import '../../../models/admin_role.dart';
 import '../../../core/network/api_client.dart';
 
 class StaffManagementApi {
@@ -20,10 +21,10 @@ class StaffManagementApi {
         StaffItem(
           id: '1',
           staffNumber: 'SYS-001',
-          name: 'System Admin',
-          email: 'admin@fazam.tech',
+          name: 'General ICT Admin',
+          email: 'ict-admin@example.com',
           phone: '',
-          primaryRole: 'system_admin',
+          primaryRole: 'ict_admin',
           departmentId: '',
           active: true,
         ),
@@ -38,8 +39,16 @@ class StaffManagementApi {
         _client.get('/api/courses'),
       ]);
       return StaffReferenceData(
-        departments: _referenceOptions(results[0], codeKey: 'code', titleKey: 'name'),
-        courses: _referenceOptions(results[1], codeKey: 'code', titleKey: 'title'),
+        departments: _referenceOptions(
+          results[0],
+          codeKey: 'code',
+          titleKey: 'name',
+        ),
+        courses: _referenceOptions(
+          results[1],
+          codeKey: 'code',
+          titleKey: 'title',
+        ),
       );
     } catch (_) {
       return const StaffReferenceData(departments: [], courses: []);
@@ -47,18 +56,41 @@ class StaffManagementApi {
   }
 
   Future<void> createStaff(Map<String, dynamic> payload) async {
+    if (!staffRoleOptions.contains(payload['role_code'])) {
+      throw const ApiException('Unsupported staff role');
+    }
     await _client.post('/api/staff', body: payload);
   }
 
-  Future<void> resetPassword({required String staffId, required String password}) async {
-    await _client.post('/api/staff/$staffId/reset-password', body: {'password': password});
+  Future<void> resetPassword({
+    required String staffId,
+    required String password,
+  }) async {
+    await _client.post(
+      '/api/staff/$staffId/reset-password',
+      body: {'password': password},
+    );
   }
 
-  Future<void> updateStaffStatus({required String staffId, required bool active}) async {
-    await _client.patch('/api/staff/$staffId/status', body: {'status': active ? 'active' : 'inactive'});
+  Future<void> updateStaffStatus({
+    required String staffId,
+    required bool active,
+  }) async {
+    await _client.patch(
+      '/api/staff/$staffId/status',
+      body: {'status': active ? 'active' : 'inactive'},
+    );
   }
 
-  Future<void> assignRole({required String staffId, required String role, String? departmentId, String? courseId}) async {
+  Future<void> assignRole({
+    required String staffId,
+    required String role,
+    String? departmentId,
+    String? courseId,
+  }) async {
+    if (!staffRoleOptions.contains(role)) {
+      throw const ApiException('Unsupported staff role');
+    }
     final numericStaffId = int.tryParse(staffId);
     if (numericStaffId == null) {
       throw const ApiException('Invalid staff selected');
@@ -83,18 +115,29 @@ class StaffManagementApi {
     await _client.post('/api/admin/staff-roles', body: payload);
   }
 
-  List<ReferenceOption> _referenceOptions(dynamic data, {required String codeKey, required String titleKey}) {
+  List<ReferenceOption> _referenceOptions(
+    dynamic data, {
+    required String codeKey,
+    required String titleKey,
+  }) {
     dynamic rows = data;
     if (data is Map) rows = data['items'] ?? data['data'] ?? data['results'];
     if (rows is! List) return const [];
-    return rows.whereType<Map>().map((raw) {
-      final json = raw.map((key, value) => MapEntry(key.toString(), value));
-      final id = json['id']?.toString() ?? '';
-      final code = json[codeKey]?.toString() ?? '';
-      final title = json[titleKey]?.toString() ?? '';
-      final label = [code, title].where((part) => part.isNotEmpty).join(' • ');
-      return ReferenceOption(id: id, label: label.isEmpty ? id : label);
-    }).where((option) => option.id.isNotEmpty).toList();
+    return rows
+        .whereType<Map>()
+        .map((raw) {
+          final json = raw.map((key, value) => MapEntry(key.toString(), value));
+          final id = json['id']?.toString() ?? '';
+          final code = json[codeKey]?.toString() ?? '';
+          final title = json[titleKey]?.toString() ?? '';
+          final label = [
+            code,
+            title,
+          ].where((part) => part.isNotEmpty).join(' • ');
+          return ReferenceOption(id: id, label: label.isEmpty ? id : label);
+        })
+        .where((option) => option.id.isNotEmpty)
+        .toList();
   }
 
   void close() => _client.close();
@@ -142,43 +185,33 @@ class StaffItem {
       json['last_name']?.toString() ?? '',
     ].where((part) => part.trim().isNotEmpty).join(' ');
     final roles = json['roles'];
-    String role = json['primary_role']?.toString() ?? json['role']?.toString() ?? '';
+    String role =
+        json['primary_role']?.toString() ?? json['role']?.toString() ?? '';
     String departmentId = json['department_id']?.toString() ?? '';
-    if (role.isEmpty && roles is List && roles.isNotEmpty && roles.first is Map) {
-      final firstRole = (roles.first as Map).map((key, value) => MapEntry(key.toString(), value));
+    if (role.isEmpty &&
+        roles is List &&
+        roles.isNotEmpty &&
+        roles.first is Map) {
+      final firstRole = (roles.first as Map).map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
       role = firstRole['code']?.toString() ?? '';
       departmentId = firstRole['scope_id']?.toString() ?? departmentId;
     }
     return StaffItem(
       id: json['id']?.toString() ?? '',
-      staffNumber: json['staff_number']?.toString() ?? json['staff_id']?.toString() ?? '',
+      staffNumber:
+          json['staff_number']?.toString() ??
+          json['staff_id']?.toString() ??
+          '',
       name: name.isEmpty ? 'Unnamed staff' : name,
       email: json['email']?.toString() ?? json['identity']?.toString() ?? '',
       phone: json['phone']?.toString() ?? '',
       primaryRole: role.isEmpty ? 'lecturer' : role,
       departmentId: departmentId,
-      active: (json['status']?.toString() ?? 'active') == 'active' && json['is_active'] != false,
+      active:
+          (json['status']?.toString() ?? 'active') == 'active' &&
+          json['is_active'] != false,
     );
   }
 }
-
-const staffRoleOptions = [
-  'system_admin',
-  'academic_admin',
-  'dean',
-  'hod',
-  'programme_coordinator',
-  'exam_officer',
-  'lecturer',
-  'moderator',
-  'proctor',
-  'content_manager',
-  'registry_officer',
-  'student_affairs',
-  'marker',
-  'teaching_assistant',
-  'dlc_director',
-  'level_adviser',
-  'invigilator',
-  'academic_records',
-];

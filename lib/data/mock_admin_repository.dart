@@ -12,14 +12,14 @@ class MockAdminRepository {
         AdminMetric(
           label: 'Assigned Courses',
           value: '3',
-          detail: 'Courses assigned by HoD, coordinator, or DLC admin',
+          detail: 'Courses assigned by HoD or General ICT Admin',
           icon: Icons.menu_book_outlined,
           status: WorkStatus.normal,
         ),
         AdminMetric(
           label: 'Course Students',
           value: '804',
-          detail: 'Students enrolled across assigned DLC courses',
+          detail: 'Students enrolled across assigned ABU courses',
           icon: Icons.groups_2_outlined,
           status: WorkStatus.normal,
         ),
@@ -64,103 +64,6 @@ class MockAdminRepository {
           detail: 'CA, quiz, exam, and final course scores submitted',
           icon: Icons.publish_outlined,
           status: WorkStatus.normal,
-        ),
-      ];
-    }
-
-    if (role == AdminRole.recordsDepartment) {
-      return const [
-        AdminMetric(
-          label: 'Total DLC Students',
-          value: '18,420',
-          detail:
-              'Official student academic profiles and matriculation records',
-          icon: Icons.badge_outlined,
-          status: WorkStatus.normal,
-        ),
-        AdminMetric(
-          label: 'Complete Registration',
-          value: '17,642',
-          detail: 'Students with official semester course registration records',
-          icon: Icons.app_registration_outlined,
-          status: WorkStatus.normal,
-        ),
-        AdminMetric(
-          label: 'Approved Results',
-          value: '2,184',
-          detail: 'Approved result records stored after academic workflow',
-          icon: Icons.workspace_premium_outlined,
-          status: WorkStatus.complete,
-        ),
-        AdminMetric(
-          label: 'Pending Results',
-          value: '276',
-          detail: 'Awaiting approved departmental, faculty, or senate status',
-          icon: Icons.pending_actions_outlined,
-          status: WorkStatus.warning,
-        ),
-        AdminMetric(
-          label: 'Missing Results',
-          value: '43',
-          detail: 'Missing CA, exam score, grade, or approved result records',
-          icon: Icons.rule_folder_outlined,
-          status: WorkStatus.urgent,
-        ),
-        AdminMetric(
-          label: 'Carryover Cases',
-          value: '780',
-          detail:
-              'Failed, repeat, outstanding, spillover, and missing-grade cases',
-          icon: Icons.repeat_outlined,
-          status: WorkStatus.warning,
-        ),
-        AdminMetric(
-          label: 'Transcript Requests',
-          value: '164',
-          detail: 'Official transcript preparation and approval tracking',
-          icon: Icons.description_outlined,
-          status: WorkStatus.warning,
-        ),
-        AdminMetric(
-          label: 'Correction Requests',
-          value: '28',
-          detail:
-              'Logged corrections with reason, authority, and supporting documents',
-          icon: Icons.manage_history_outlined,
-          status: WorkStatus.urgent,
-        ),
-      ];
-    }
-
-    if (role == AdminRole.invigilator) {
-      return const [
-        AdminMetric(
-          label: 'Assigned Rooms',
-          value: '5',
-          detail: '2 currently in progress',
-          icon: Icons.meeting_room_outlined,
-          status: WorkStatus.normal,
-        ),
-        AdminMetric(
-          label: 'Check-ins',
-          value: '487',
-          detail: '96% verified',
-          icon: Icons.how_to_reg_outlined,
-          status: WorkStatus.complete,
-        ),
-        AdminMetric(
-          label: 'Open Incidents',
-          value: '3',
-          detail: 'Needs closing notes',
-          icon: Icons.gpp_maybe_outlined,
-          status: WorkStatus.urgent,
-        ),
-        AdminMetric(
-          label: 'Device Flags',
-          value: '12',
-          detail: 'Review before submission',
-          icon: Icons.devices_other_outlined,
-          status: WorkStatus.warning,
         ),
       ];
     }
@@ -260,71 +163,10 @@ class MockAdminRepository {
       ];
     }
 
-    if (role == AdminRole.dlcDirector) {
-      return const [
-        AdminMetric(
-          label: 'Total Students',
-          value: '12,480',
-          detail: 'Active DLC learners across programmes and levels',
-          icon: Icons.groups_2_outlined,
-          status: WorkStatus.normal,
-        ),
-        AdminMetric(
-          label: 'Total Lecturers',
-          value: '184',
-          detail: 'Assigned to courses, moderation, and live classes',
-          icon: Icons.school_outlined,
-          status: WorkStatus.normal,
-        ),
-        AdminMetric(
-          label: 'Departments',
-          value: '18',
-          detail: 'DLC departments with active programme oversight',
-          icon: Icons.account_tree_outlined,
-          status: WorkStatus.complete,
-        ),
-        AdminMetric(
-          label: 'Programmes',
-          value: '42',
-          detail: 'Undergraduate and professional distance programmes',
-          icon: Icons.cast_for_education_outlined,
-          status: WorkStatus.complete,
-        ),
-        AdminMetric(
-          label: 'Pending Uploads',
-          value: '37',
-          detail: 'Lecture notes, videos, quizzes, and course materials',
-          icon: Icons.cloud_upload_outlined,
-          status: WorkStatus.warning,
-        ),
-        AdminMetric(
-          label: 'Upcoming Exams',
-          value: '23',
-          detail: 'Timetable, moderation, proctoring, and CBT readiness',
-          icon: Icons.event_available_outlined,
-          status: WorkStatus.warning,
-        ),
-        AdminMetric(
-          label: 'Complaints',
-          value: '58',
-          detail: 'Academic, payment, technical, and support cases',
-          icon: Icons.support_agent_outlined,
-          status: WorkStatus.urgent,
-        ),
-        AdminMetric(
-          label: 'Submitted Results',
-          value: '71%',
-          detail: 'Courses with lecturer, moderator, and HoD progress',
-          icon: Icons.workspace_premium_outlined,
-          status: WorkStatus.normal,
-        ),
-      ];
-    }
-
     if (role == AdminRole.hod) {
       return const [
         AdminMetric(
-          label: 'DLC Students',
+          label: 'ABU Students',
           value: '1,250',
           detail: 'Computer Science students across 100L to 400L',
           icon: Icons.groups_2_outlined,
@@ -333,7 +175,7 @@ class MockAdminRepository {
         AdminMetric(
           label: 'Department Lecturers',
           value: '18',
-          detail: 'Lecturers assigned to DLC departmental courses',
+          detail: 'Lecturers assigned to ABU departmental courses',
           icon: Icons.school_outlined,
           status: WorkStatus.normal,
         ),
@@ -382,134 +224,6 @@ class MockAdminRepository {
       ];
     }
 
-    if (role == AdminRole.levelAdviser) {
-      return const [
-        AdminMetric(
-          label: 'Assigned Level',
-          value: '200L',
-          detail: 'Computer Science DLC students assigned to this adviser',
-          icon: Icons.person_search_outlined,
-          status: WorkStatus.normal,
-        ),
-        AdminMetric(
-          label: 'Total Students',
-          value: '420',
-          detail: '390 active and 30 inactive students',
-          icon: Icons.groups_2_outlined,
-          status: WorkStatus.normal,
-        ),
-        AdminMetric(
-          label: 'Registration Issues',
-          value: '18',
-          detail: 'Incomplete, wrong, missing, or awaiting approval cases',
-          icon: Icons.app_registration_outlined,
-          status: WorkStatus.warning,
-        ),
-        AdminMetric(
-          label: 'Exam Not Eligible',
-          value: '22',
-          detail:
-              'Students missing registration, quizzes, assignments, or participation',
-          icon: Icons.assignment_late_outlined,
-          status: WorkStatus.urgent,
-        ),
-        AdminMetric(
-          label: 'Open Complaints',
-          value: '11',
-          detail: 'Academic complaints for assigned level only',
-          icon: Icons.support_agent_outlined,
-          status: WorkStatus.warning,
-        ),
-        AdminMetric(
-          label: 'Assignment Participation',
-          value: '83%',
-          detail: 'Submission rate across assigned level courses',
-          icon: Icons.assignment_turned_in_outlined,
-          status: WorkStatus.normal,
-        ),
-        AdminMetric(
-          label: 'Quiz Participation',
-          value: '80%',
-          detail: 'Quiz attempts and missed assessment checks',
-          icon: Icons.quiz_outlined,
-          status: WorkStatus.normal,
-        ),
-        AdminMetric(
-          label: 'At-Risk Students',
-          value: '34',
-          detail: 'Inactive, low participation, or unresolved academic issues',
-          icon: Icons.flag_outlined,
-          status: WorkStatus.urgent,
-        ),
-      ];
-    }
-
-    if (role == AdminRole.supportTeam) {
-      return const [
-        AdminMetric(
-          label: 'Open Tickets',
-          value: '58',
-          detail: 'Academic, technical, access, and escalation tickets',
-          icon: Icons.mark_unread_chat_alt_outlined,
-          status: WorkStatus.warning,
-        ),
-        AdminMetric(
-          label: 'Urgent Cases',
-          value: '9',
-          detail: 'Missing score, exam incident, and access escalations',
-          icon: Icons.priority_high_outlined,
-          status: WorkStatus.urgent,
-        ),
-        AdminMetric(
-          label: 'SLA On Track',
-          value: '86%',
-          detail: 'Tickets handled within current support targets',
-          icon: Icons.timer_outlined,
-          status: WorkStatus.normal,
-        ),
-        AdminMetric(
-          label: 'Resolved Today',
-          value: '34',
-          detail: 'Closed support cases with audit notes',
-          icon: Icons.check_circle_outline,
-          status: WorkStatus.complete,
-        ),
-      ];
-    }
-
-    if (role == AdminRole.reportsTeam) {
-      return const [
-        AdminMetric(
-          label: 'Scheduled Reports',
-          value: '18',
-          detail: 'Management, academic, support, and activity reports',
-          icon: Icons.summarize_outlined,
-          status: WorkStatus.normal,
-        ),
-        AdminMetric(
-          label: 'Exports Ready',
-          value: '11',
-          detail: 'PDF, Excel, and CSV report packages',
-          icon: Icons.download_outlined,
-          status: WorkStatus.complete,
-        ),
-        AdminMetric(
-          label: 'Pending Reviews',
-          value: '6',
-          detail: 'Reports waiting for data-quality checks',
-          icon: Icons.fact_check_outlined,
-          status: WorkStatus.warning,
-        ),
-        AdminMetric(
-          label: 'Data Alerts',
-          value: '3',
-          detail: 'Missing activity, result, or support data signals',
-          icon: Icons.report_problem_outlined,
-          status: WorkStatus.urgent,
-        ),
-      ];
-    }
-
     return const [
       AdminMetric(
         label: 'Active Exams',
@@ -543,87 +257,6 @@ class MockAdminRepository {
   }
 
   List<AdminTask> tasksFor(AdminRole role, {required String pageLabel}) {
-    if (role == AdminRole.dlcDirector) {
-      switch (pageLabel) {
-        case 'Staff Management':
-          return const [
-            AdminTask(
-              title: 'Approve new DLC quality assurance officer account',
-              ownerRole: AdminRole.dlcDirector,
-              due: 'Today, 11:30 AM',
-              status: WorkStatus.warning,
-              description:
-                  'Confirm department scope, programme access, and reporting permissions.',
-            ),
-            AdminTask(
-              title: 'Reset access for inactive level coordinator',
-              ownerRole: AdminRole.departmentAdmin,
-              due: 'Today, 2:00 PM',
-              status: WorkStatus.urgent,
-              description:
-                  'Coordinator has not logged in during course registration week.',
-            ),
-          ];
-        case 'Lecturer Monitoring':
-          return const [
-            AdminTask(
-              title: 'Escalate lecturers with missing video lectures',
-              ownerRole: AdminRole.lecturer,
-              due: 'Today',
-              status: WorkStatus.urgent,
-              description:
-                  'Nine courses have fewer than half of expected video lectures uploaded.',
-            ),
-            AdminTask(
-              title: 'Review lecturer engagement report',
-              ownerRole: AdminRole.dlcDirector,
-              due: 'Tomorrow',
-              status: WorkStatus.warning,
-              description:
-                  'Compare notes, videos, quizzes, assignments, and student engagement.',
-            ),
-          ];
-        case 'Exams & Assessments':
-          return const [
-            AdminTask(
-              title: 'Coordinate DLC exam readiness approval',
-              ownerRole: AdminRole.examOfficer,
-              due: 'Today, 4:00 PM',
-              status: WorkStatus.warning,
-              description:
-                  'Confirm question moderation, proctoring setup, CBT support, and timetable coverage.',
-            ),
-            AdminTask(
-              title: 'Investigate incomplete 300L timetable',
-              ownerRole: AdminRole.departmentAdmin,
-              due: 'Today',
-              status: WorkStatus.urgent,
-              description:
-                  'Computer Science 300L still has two courses without exam slots.',
-            ),
-          ];
-        case 'Approvals':
-          return const [
-            AdminTask(
-              title: 'Approve course activation batch',
-              ownerRole: AdminRole.dlcDirector,
-              due: 'Today, 3:00 PM',
-              status: WorkStatus.warning,
-              description:
-                  'Courses require lecturer, moderator, assessment, and exam readiness checks.',
-            ),
-            AdminTask(
-              title: 'Review special student cases',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Tomorrow',
-              status: WorkStatus.normal,
-              description:
-                  'Coordinate without bypassing HoD, moderator, exam officer, and records authority.',
-            ),
-          ];
-      }
-    }
-
     if (role == AdminRole.hod) {
       switch (pageLabel) {
         case 'Lecturers':
@@ -634,7 +267,7 @@ class MockAdminRepository {
               due: 'Today, 12:00 PM',
               status: WorkStatus.warning,
               description:
-                  'Course is active but still missing a confirmed lecturer and coordinator.',
+                  'Course is active but still missing a confirmed lecturer.',
             ),
             AdminTask(
               title: 'Follow up delayed lecturer uploads',
@@ -642,7 +275,7 @@ class MockAdminRepository {
               due: 'Today',
               status: WorkStatus.urgent,
               description:
-                  'Three lecturers have pending notes, videos, or quizzes for active DLC courses.',
+                  'Three lecturers have pending notes, videos, or quizzes for active ABU courses.',
             ),
           ];
         case 'Courses':
@@ -797,14 +430,6 @@ class MockAdminRepository {
               description:
                   'Nineteen academic questions are waiting in course Q&A.',
             ),
-            AdminTask(
-              title: 'Follow up inactive students',
-              ownerRole: AdminRole.levelAdviser,
-              due: 'Tomorrow',
-              status: WorkStatus.normal,
-              description:
-                  'Students missed videos, downloads, assignments, or quizzes.',
-            ),
           ];
         case 'Marking & Grading':
         case 'Results Submission':
@@ -829,137 +454,6 @@ class MockAdminRepository {
       }
     }
 
-    if (role == AdminRole.levelAdviser) {
-      switch (pageLabel) {
-        case 'My Students':
-          return const [
-            AdminTask(
-              title: 'Review 30 inactive 200L students',
-              ownerRole: AdminRole.levelAdviser,
-              due: 'Today',
-              status: WorkStatus.urgent,
-              description:
-                  'Check login, video views, downloads, submissions, quiz attempts, and forum participation.',
-            ),
-            AdminTask(
-              title: 'Flag students with weak academic standing',
-              ownerRole: AdminRole.levelAdviser,
-              due: 'Tomorrow',
-              status: WorkStatus.warning,
-              description:
-                  'Prepare follow-up list before escalation to HoD or lecturer.',
-            ),
-          ];
-        case 'Course Registration':
-          return const [
-            AdminTask(
-              title: 'Resolve incomplete course registrations',
-              ownerRole: AdminRole.levelAdviser,
-              due: 'Today, 2:00 PM',
-              status: WorkStatus.warning,
-              description:
-                  'Students with wrong, missing, or unapproved compulsory courses need academic guidance.',
-            ),
-            AdminTask(
-              title: 'Escalate serious registration exceptions to HoD',
-              ownerRole: AdminRole.hod,
-              due: 'Tomorrow',
-              status: WorkStatus.normal,
-              description:
-                  'Level adviser helps students fix academic issues, then escalates unresolved cases.',
-            ),
-          ];
-        case 'Student Progress':
-        case 'Attendance & Participation':
-          return const [
-            AdminTask(
-              title: 'Follow up students below participation threshold',
-              ownerRole: AdminRole.levelAdviser,
-              due: 'Today',
-              status: WorkStatus.warning,
-              description:
-                  'Participation includes login activity, video views, live class attendance, downloads, assignments, quizzes, and forum activity.',
-            ),
-            AdminTask(
-              title: 'Send reminder to students who missed quizzes',
-              ownerRole: AdminRole.levelAdviser,
-              due: 'Tomorrow',
-              status: WorkStatus.normal,
-              description:
-                  'Coordinate with course lecturers where assessment windows need clarification.',
-            ),
-          ];
-        case 'Exam Eligibility':
-          return const [
-            AdminTask(
-              title: 'Review 22 exam eligibility risks',
-              ownerRole: AdminRole.levelAdviser,
-              due: 'Today, 4:00 PM',
-              status: WorkStatus.urgent,
-              description:
-                  'Check registration, assignments, quizzes, payment signal, participation, and serious academic issues.',
-            ),
-            AdminTask(
-              title: 'Escalate unresolved exam cases',
-              ownerRole: AdminRole.examOfficer,
-              due: 'Friday',
-              status: WorkStatus.warning,
-              description:
-                  'Exam eligibility issues move to exam officer or HoD after adviser review.',
-            ),
-          ];
-        case 'Complaints':
-          return const [
-            AdminTask(
-              title: 'Handle missing CA score complaint',
-              ownerRole: AdminRole.levelAdviser,
-              due: 'Today',
-              status: WorkStatus.warning,
-              description:
-                  'Academic complaint should be routed to lecturer or HoD, not the private support team queue.',
-            ),
-            AdminTask(
-              title: 'Forward technical access issue to ICT support',
-              ownerRole: AdminRole.supportTeam,
-              due: 'Today',
-              status: WorkStatus.normal,
-              description:
-                  'Level adviser can escalate technical issues without viewing support team activity.',
-            ),
-          ];
-        case 'Messages / Announcements':
-          return const [
-            AdminTask(
-              title: 'Send course registration deadline notice',
-              ownerRole: AdminRole.levelAdviser,
-              due: 'Today',
-              status: WorkStatus.warning,
-              description:
-                  'Message all 200L Computer Science DLC students before the Friday deadline.',
-            ),
-            AdminTask(
-              title: 'Send exam readiness reminder',
-              ownerRole: AdminRole.levelAdviser,
-              due: 'Tomorrow',
-              status: WorkStatus.normal,
-              description:
-                  'Target selected students with pending registration, assignments, or quizzes.',
-            ),
-          ];
-        case 'Reports':
-          return const [
-            AdminTask(
-              title: 'Generate 200L exam eligibility report',
-              ownerRole: AdminRole.levelAdviser,
-              due: 'Friday',
-              status: WorkStatus.normal,
-              description:
-                  'Level report includes student list, registration, inactive students, complaints, participation, and at-risk cases.',
-            ),
-          ];
-      }
-    }
-
     if (role == AdminRole.examOfficer) {
       switch (pageLabel) {
         case 'Course Exam Readiness':
@@ -978,7 +472,7 @@ class MockAdminRepository {
               due: 'Today',
               status: WorkStatus.urgent,
               description:
-                  'HoD remains Chief Departmental Exam Officer for final academic supervision.',
+                  'HoD remains Chief Exam Officer for final academic supervision.',
             ),
           ];
         case 'Question Submission':
@@ -1073,7 +567,7 @@ class MockAdminRepository {
               due: 'Friday',
               status: WorkStatus.normal,
               description:
-                  'Exam officer prepares completeness checks; HoD remains Chief Departmental Exam Officer.',
+                  'Exam officer prepares completeness checks; HoD remains Chief Exam Officer.',
             ),
           ];
         case 'Exam Complaints':
@@ -1101,197 +595,6 @@ class MockAdminRepository {
       }
     }
 
-    if (role == AdminRole.recordsDepartment) {
-      switch (pageLabel) {
-        case 'Admission / Matriculation':
-          return const [
-            AdminTask(
-              title: 'Verify new DLC matriculation number batch',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Today, 1:00 PM',
-              status: WorkStatus.warning,
-              description:
-                  'Confirm admission session, programme, department, faculty, level, and mode of study.',
-            ),
-          ];
-        case 'Course Registration Records':
-          return const [
-            AdminTask(
-              title: 'Store approved 200L course registration records',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Today',
-              status: WorkStatus.warning,
-              description:
-                  'Workflow: Student registers, Level Adviser reviews, HoD confirms, Academic Records stores official record.',
-            ),
-            AdminTask(
-              title: 'Audit wrong and missing course registrations',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Tomorrow',
-              status: WorkStatus.normal,
-              description:
-                  'Check compulsory, elective, carryover, late, and awaiting-approval registration records.',
-            ),
-          ];
-        case 'Result Records':
-          return const [
-            AdminTask(
-              title: 'Store approved CSC 305 result batch',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Today',
-              status: WorkStatus.warning,
-              description:
-                  'Academic Records stores approved results only after lecturer, exam officer, HoD, board/faculty/senate approval workflow.',
-            ),
-            AdminTask(
-              title: 'Review 43 missing result records',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Friday',
-              status: WorkStatus.urgent,
-              description:
-                  'Track missing CA score, exam score, total, grade, grade point, GPA, CGPA, and approval status.',
-            ),
-          ];
-        case 'Carryover / Repeat Courses':
-          return const [
-            AdminTask(
-              title: 'Reconcile carryover and repeat course list',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Today',
-              status: WorkStatus.warning,
-              description:
-                  'Track failed, repeat, outstanding, spillover, and missing-grade course records.',
-            ),
-          ];
-        case 'Academic Standing':
-          return const [
-            AdminTask(
-              title: 'Generate probation and low-CGPA review list',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Tomorrow',
-              status: WorkStatus.warning,
-              description:
-                  'Identify good standing, probation, low CGPA, outstanding courses, and graduation eligibility.',
-            ),
-          ];
-        case 'Transcript Records':
-          return const [
-            AdminTask(
-              title: 'Prepare transcript request batch',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Friday',
-              status: WorkStatus.normal,
-              description:
-                  'Transcript release must follow university approval rules and official transcript format.',
-            ),
-          ];
-        case 'Graduation / Clearance':
-          return const [
-            AdminTask(
-              title: 'Check graduation clearance eligibility',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Friday',
-              status: WorkStatus.warning,
-              description:
-                  'Confirm completed courses, carryovers, CGPA, outstanding records, and clearance status.',
-            ),
-          ];
-        case 'Corrections & Audit Trail':
-          return const [
-            AdminTask(
-              title: 'Process approved CSC 201 grade correction',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Today',
-              status: WorkStatus.urgent,
-              description:
-                  'Log previous value, new value, reason, date, approval authority, officer, and supporting document.',
-            ),
-          ];
-        case 'Reports':
-          return const [
-            AdminTask(
-              title: 'Generate missing result and carryover report',
-              ownerRole: AdminRole.recordsDepartment,
-              due: 'Friday',
-              status: WorkStatus.normal,
-              description:
-                  'Academic records reports cover official student records, registration, results, carryover, probation, graduation, transcript requests, and statistics.',
-            ),
-          ];
-      }
-    }
-
-    if (role == AdminRole.supportTeam) {
-      return const [
-        AdminTask(
-          title: 'Triage missing score support queue',
-          ownerRole: AdminRole.supportTeam,
-          due: 'Today, 12:00 PM',
-          status: WorkStatus.urgent,
-          description:
-              'Route academic cases to HoD or lecturer without exposing support activity to other roles.',
-        ),
-        AdminTask(
-          title: 'Close resolved technical access tickets',
-          ownerRole: AdminRole.supportTeam,
-          due: 'Today',
-          status: WorkStatus.warning,
-          description:
-              'Attach support notes and SLA status before closing tickets.',
-        ),
-      ];
-    }
-
-    if (role == AdminRole.reportsTeam) {
-      return const [
-        AdminTask(
-          title: 'Generate DLC management report export',
-          ownerRole: AdminRole.reportsTeam,
-          due: 'Friday',
-          status: WorkStatus.normal,
-          description:
-              'Prepare PDF, Excel, and CSV outputs for authorised management distribution.',
-        ),
-        AdminTask(
-          title: 'Validate lecturer performance dataset',
-          ownerRole: AdminRole.reportsTeam,
-          due: 'Tomorrow',
-          status: WorkStatus.warning,
-          description:
-              'Check upload, engagement, marking, and score-submission data before release.',
-        ),
-      ];
-    }
-
-    if (role == AdminRole.invigilator) {
-      return const [
-        AdminTask(
-          title: 'Review phone-like object alert with evidence',
-          ownerRole: AdminRole.invigilator,
-          due: 'Now',
-          status: WorkStatus.urgent,
-          description:
-              'AI flagged object detection for manual review; open camera frame and decide clear, warn, escalate, or attach to report.',
-        ),
-        AdminTask(
-          title: 'Verify late check-in identity and device ID',
-          ownerRole: AdminRole.invigilator,
-          due: 'Today, 9:15 AM',
-          status: WorkStatus.warning,
-          description:
-              'Confirm candidate face, matric number, whitelisted workstation, and check-in reason before approving exam start.',
-        ),
-        AdminTask(
-          title: 'Resolve pending evidence sync queue',
-          ownerRole: AdminRole.invigilator,
-          due: 'Today, 10:00 AM',
-          status: WorkStatus.normal,
-          description:
-              'Check evidence uploaded, local pending evidence, and ledger pending status for assigned exam group.',
-        ),
-      ];
-    }
-
     if (pageLabel == 'Notices') {
       return const [
         AdminTask(
@@ -1313,45 +616,11 @@ class MockAdminRepository {
     }
 
     if (pageLabel == 'Course Registration') {
-      return const [
-        AdminTask(
-          title: 'Approve carryover/repeat registration batch',
-          ownerRole: AdminRole.recordsDepartment,
-          due: 'Today, 2:30 PM',
-          status: WorkStatus.urgent,
-          description:
-              'Confirm failed, absent and missing-result courses before final approval.',
-        ),
-        AdminTask(
-          title: 'Review overload waiver requests',
-          ownerRole: AdminRole.levelAdviser,
-          due: 'Tomorrow',
-          status: WorkStatus.warning,
-          description:
-              'Students above credit limit require adviser and records confirmation.',
-        ),
-      ];
+      return const [];
     }
 
     if (pageLabel == 'Records') {
-      return const [
-        AdminTask(
-          title: 'Verify CGPA recalculation queue',
-          ownerRole: AdminRole.recordsDepartment,
-          due: 'Today, 4:00 PM',
-          status: WorkStatus.warning,
-          description:
-              'Reconcile released results, repeated courses and transcript preview records.',
-        ),
-        AdminTask(
-          title: 'Update cohort mappings for new intake',
-          ownerRole: AdminRole.departmentAdmin,
-          due: 'Friday',
-          status: WorkStatus.normal,
-          description:
-              'Programme, level, semester, mode and department cohorts must be current.',
-        ),
-      ];
+      return const [];
     }
 
     return [
@@ -1359,28 +628,13 @@ class MockAdminRepository {
         title: role == AdminRole.lecturer
             ? 'Upload CSC 204 answer guide'
             : 'Approve CSC 204 question paper',
-        ownerRole: role == AdminRole.superAdmin ? AdminRole.examOfficer : role,
+        ownerRole: role == AdminRole.ictAdmin ? AdminRole.examOfficer : role,
         due: 'Today, 2:00 PM',
         status: WorkStatus.warning,
         description:
             'Final moderation is waiting for an administrative sign-off.',
       ),
-      const AdminTask(
-        title: 'Resolve biometric mismatch list',
-        ownerRole: AdminRole.invigilator,
-        due: 'Today, 4:30 PM',
-        status: WorkStatus.urgent,
-        description:
-            'Three candidates need identity notes attached to their exam record.',
-      ),
-      const AdminTask(
-        title: 'Publish level adviser clearance report',
-        ownerRole: AdminRole.levelAdviser,
-        due: 'Tomorrow',
-        status: WorkStatus.normal,
-        description:
-            'Registration exceptions and course carry-over lists are ready.',
-      ),
+
       const AdminTask(
         title: 'Review departmental result summary',
         ownerRole: AdminRole.hod,
@@ -1393,99 +647,6 @@ class MockAdminRepository {
   }
 
   List<String> workflowsFor(String pageLabel, {AdminRole? role}) {
-    if (role == AdminRole.invigilator) {
-      switch (pageLabel) {
-        case 'Live Student Grid':
-          return const [
-            'Active students only',
-            'Camera, mic, screen, network, and device status',
-            'Risk colour status',
-            'Integrity score',
-            'Last detected event',
-          ];
-        case 'AI Alert Queue':
-          return const [
-            'Critical alerts first',
-            'Manual-review alerts',
-            'Evidence-captured alerts',
-            'Face, object, audio, and screen activity detection',
-            'Unreviewed alert count',
-          ];
-        case 'Evidence Review':
-          return const [
-            'Camera frame evidence',
-            'Screenshot evidence',
-            'Audio clip evidence',
-            'AI confidence and detector source',
-            'Ledger reference',
-          ];
-        case 'Manual Decisions':
-          return const [
-            'Clear false alarm',
-            'Warn student',
-            'Request scan or recheck',
-            'Escalate to chief invigilator',
-            'Pause, resume, or terminate session',
-          ];
-        case 'Student Session Detail':
-          return const [
-            'Live camera preview',
-            'Face, object, audio, and screen status',
-            'Risk timeline',
-            'Device and network information',
-            'Exam progress',
-          ];
-        case 'Room Scan Requests':
-          return const [
-            'Request desk scan',
-            'Request left and right scan',
-            'Request behind-monitor scan',
-            'Request ID and face recheck',
-            'Request microphone check',
-          ];
-        case 'Attendance & Check-in':
-          return const [
-            'Checked-in students',
-            'Absent students',
-            'Approve late check-in',
-            'Verify identity and device ID',
-            'Mark present or absent',
-          ];
-        case 'Risk Timeline':
-          return const [
-            'Face verified',
-            'Exam started',
-            'Detector events',
-            'Evidence captured',
-            'Invigilator decisions',
-          ];
-        case 'Malpractice Drafts':
-          return const [
-            'Selected evidence list',
-            'AI confidence scores',
-            'Invigilator decision',
-            'Final recommendation',
-            'Submit or export report',
-          ];
-        case 'Evidence Sync Status':
-          return const [
-            'Evidence uploaded',
-            'Evidence pending locally',
-            'Ledger pending',
-            'Sync failed',
-            'Network-aware status',
-          ];
-        case 'Audit Trail':
-          return const [
-            'Reviewer identity',
-            'Decision timestamp',
-            'Evidence used',
-            'Warning and escalation record',
-            'Report creation log',
-          ];
-      }
-    }
-
     if (role == AdminRole.lecturer) {
       switch (pageLabel) {
         case 'My Courses':
@@ -1567,83 +728,6 @@ class MockAdminRepository {
             'Announcements',
             'Private academic messages',
             'Frequently asked questions',
-          ];
-      }
-    }
-
-    if (role == AdminRole.levelAdviser) {
-      switch (pageLabel) {
-        case 'Overview':
-          return const [
-            'Assigned level only',
-            'Registration and progress monitoring',
-            'Participation and attendance signals',
-            'Exam eligibility risks',
-            'Escalation to HoD, lecturer, exam officer, ICT, or DLC Director',
-          ];
-        case 'My Students':
-          return const [
-            'Student profiles',
-            'Registration status',
-            'Activity status',
-            'Academic standing',
-            'Exam eligibility and complaint status',
-          ];
-        case 'Course Registration':
-          return const [
-            'Completed registrations',
-            'Incomplete registrations',
-            'Wrong courses',
-            'Missing compulsory courses',
-            'Awaiting approval cases',
-          ];
-        case 'Student Progress':
-          return const [
-            'Assignment submission rate',
-            'Quiz participation',
-            'Lecture video completion',
-            'Continuous assessment performance',
-            'Students at academic risk',
-          ];
-        case 'Attendance & Participation':
-          return const [
-            'Login activity',
-            'Video lecture views',
-            'Live class attendance',
-            'Material downloads',
-            'Forum participation',
-          ];
-        case 'Exam Eligibility':
-          return const [
-            'Registration completed',
-            'Assignments submitted',
-            'Quizzes attempted',
-            'Minimum participation reached',
-            'Escalation to exam officer or HoD',
-          ];
-        case 'Complaints':
-          return const [
-            'Wrong course registration',
-            'Missing course or CA score',
-            'Lecturer response issue',
-            'Assignment or quiz issue',
-            'Academic escalation without support-team activity access',
-          ];
-        case 'Messages / Announcements':
-          return const [
-            'Send to all students in level',
-            'Send to selected students',
-            'Remind inactive students',
-            'Exam readiness notice',
-            'Registration deadline notice',
-          ];
-        case 'Reports':
-          return const [
-            'Level student list',
-            'Registration report',
-            'Inactive student report',
-            'Exam eligibility report',
-            'Participation and at-risk reports',
           ];
       }
     }
@@ -1757,123 +841,10 @@ class MockAdminRepository {
       }
     }
 
-    if (role == AdminRole.recordsDepartment) {
-      switch (pageLabel) {
-        case 'Student Records':
-          return const [
-            'Official student academic profiles',
-            'Matriculation and admission records',
-            'Programme, department, faculty, and level',
-            'DLC mode and current semester',
-            'Academic status history',
-          ];
-        case 'Admission / Matriculation':
-          return const [
-            'Admission records',
-            'Matriculation numbers',
-            'Admission session',
-            'Programme and level mapping',
-            'Official profile verification',
-          ];
-        case 'Course Registration Records':
-          return const [
-            'Registered courses by semester',
-            'Compulsory, elective, and carryover courses',
-            'Missing and wrong registration',
-            'Late registration',
-            'Official approval status',
-          ];
-        case 'Programme & Level Records':
-          return const [
-            'Programme records',
-            'Level records',
-            'Department and faculty mapping',
-            'Current semester',
-            'Academic history structure',
-          ];
-        case 'Result Records':
-          return const [
-            'Approved result records only',
-            'CA, exam, total, grade, and grade point',
-            'Semester GPA and CGPA',
-            'Missing result tracking',
-            'Carryover record creation',
-          ];
-        case 'Carryover / Repeat Courses':
-          return const [
-            'Failed courses',
-            'Carryover courses',
-            'Repeat courses',
-            'Outstanding courses',
-            'Spillover status',
-          ];
-        case 'Academic Standing':
-          return const [
-            'Good standing',
-            'Probation and low CGPA',
-            'Outstanding courses',
-            'Graduation eligibility',
-            'Not eligible for graduation',
-          ];
-        case 'Transcript Records':
-          return const [
-            'Semester result history',
-            'Course codes and titles',
-            'Credit units and grades',
-            'GPA and CGPA',
-            'Official transcript preparation',
-          ];
-        case 'Graduation / Clearance':
-          return const [
-            'Graduation eligibility',
-            'Outstanding course checks',
-            'Approved result completeness',
-            'Clearance status',
-            'Final academic history review',
-          ];
-        case 'Corrections & Audit Trail':
-          return const [
-            'Correction reason',
-            'Previous and new values',
-            'Approval authority',
-            'Supporting document',
-            'Traceable audit log',
-          ];
-        case 'Reports':
-          return const [
-            'Student academic record report',
-            'Course registration and result reports',
-            'Missing result and carryover reports',
-            'Probation and graduation eligibility',
-            'Transcript request and department statistics',
-          ];
-      }
-    }
-
-    if (role == AdminRole.supportTeam) {
-      return const [
-        'Private support route',
-        'Ticket triage',
-        'Academic support routing',
-        'Technical issue handling',
-        'SLA activity audit',
-      ];
-    }
-
-    if (role == AdminRole.reportsTeam) {
-      return const [
-        'Private reports route',
-        'Management reports',
-        'Analytics dashboards',
-        'PDF, Excel, and CSV exports',
-        'Report data quality checks',
-      ];
-    }
-
     switch (pageLabel) {
       case 'Overview':
         return const [
-          'DLC-wide operational visibility',
+          'ABU-wide operational visibility',
           'Staff and lecturer supervision',
           'Course delivery tracking',
           'Student participation monitoring',
@@ -1899,8 +870,8 @@ class MockAdminRepository {
         return const [
           'Faculty, department, and programme setup',
           'HoD assignment',
-          'Programme coordinator assignment',
-          'Level coordinator assignment',
+          'HoD assignment',
+          'Exam Officer assignment',
           'Course and student mapping',
         ];
       case 'Course Management':
@@ -1937,7 +908,7 @@ class MockAdminRepository {
         ];
       case 'Settings':
         return const [
-          'DLC policy settings',
+          'ABU policy settings',
           'Notification templates',
           'Operational notice controls',
           'Approval rules',
@@ -1945,9 +916,9 @@ class MockAdminRepository {
         ];
       case 'Department Overview':
         return const [
-          'Department-only DLC visibility',
+          'Department-only ABU visibility',
           'Course and lecturer supervision',
-          'Level coordinator monitoring',
+          'Lecturer monitoring',
           'Academic quality alerts',
           'Departmental reporting',
         ];
@@ -1962,18 +933,10 @@ class MockAdminRepository {
       case 'Courses':
         return const [
           'Department course catalogue',
-          'Lecturer and coordinator allocation',
+          'Lecturer allocation',
           'Moderator assignment visibility',
           'Student enrolment per course',
           'Approve or flag course readiness',
-        ];
-      case 'Level Coordinators':
-        return const [
-          '100L to 400L coordinator oversight',
-          'Students per level',
-          'Registration issues by level',
-          'Exam eligibility issues',
-          'Student progress reports',
         ];
       case 'Students':
         return const [
@@ -2068,7 +1031,7 @@ class MockAdminRepository {
           'Staff roles',
           'Lecturer allocation',
           'Invigilator assignment',
-          'Department/faculty admins',
+          'General ICT Admin',
           'Access control',
         ];
       default:

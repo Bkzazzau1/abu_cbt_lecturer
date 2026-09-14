@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'app/kslas_admin_app.dart';
+import 'app/abu_cbt_admin_app.dart';
 
 void main() {
-  runApp(const KslasAdminApp());
+  runApp(const AbuCbtAdminApp());
 }

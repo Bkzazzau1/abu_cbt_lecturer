@@ -2,12 +2,9 @@ class ApiConfig {
   const ApiConfig._();
 
   static const String _definedBaseUrl = String.fromEnvironment(
-    'KSLAS_API_BASE_URL',
+    'ABU_CBT_API_BASE_URL',
     defaultValue: '',
   );
-
-  static const String productionAdminOrigin = 'https://admin.fazam.tech';
-  static const String productionApiOrigin = 'https://api.fazam.tech';
 
   static String get baseUrl {
     final defined = _definedBaseUrl.trim();
@@ -15,10 +12,11 @@ class ApiConfig {
       return _stripTrailingSlash(defined);
     }
 
-    final currentOrigin = Uri.base.origin;
-    if (currentOrigin == productionAdminOrigin) {
-      return productionApiOrigin;
-    }
+    final currentUri = Uri.base;
+    final currentOrigin =
+        currentUri.scheme == 'http' || currentUri.scheme == 'https'
+        ? currentUri.origin
+        : '';
     if (currentOrigin.startsWith('http')) {
       return _stripTrailingSlash(currentOrigin);
     }
@@ -28,9 +26,9 @@ class ApiConfig {
 
   static Uri uri(String path, [Map<String, String>? queryParameters]) {
     final cleanPath = path.startsWith('/') ? path : '/$path';
-    return Uri.parse('$baseUrl$cleanPath').replace(
-      queryParameters: queryParameters,
-    );
+    return Uri.parse(
+      '$baseUrl$cleanPath',
+    ).replace(queryParameters: queryParameters);
   }
 
   static bool _isPlaceholder(String value) {

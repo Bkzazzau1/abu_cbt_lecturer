@@ -24,13 +24,13 @@ class AuthSession extends ChangeNotifier {
 
   static final AuthSession instance = AuthSession._();
 
-  static const _tokenKey = 'kslas_staff_token';
-  static const _staffIdKey = 'kslas_staff_id';
-  static const _emailKey = 'kslas_staff_email';
-  static const _nameKey = 'kslas_staff_name';
-  static const _primaryRoleKey = 'kslas_staff_primary_role';
-  static const _rolesKey = 'kslas_staff_roles';
-  static const _envToken = String.fromEnvironment('KSLAS_STAFF_TOKEN');
+  static const _tokenKey = 'abu_cbt_staff_token';
+  static const _staffIdKey = 'abu_cbt_staff_id';
+  static const _emailKey = 'abu_cbt_staff_email';
+  static const _nameKey = 'abu_cbt_staff_name';
+  static const _primaryRoleKey = 'abu_cbt_staff_primary_role';
+  static const _rolesKey = 'abu_cbt_staff_roles';
+  static const _envToken = String.fromEnvironment('ABU_CBT_STAFF_TOKEN');
 
   StaffSession? _session;
 

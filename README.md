@@ -1,62 +1,26 @@
-# KSLAS Admin UI
+# ABU CBT Admin
 
-Flutter admin console for KSLAS academic operations across Android, iOS, web, desktop, and PWA.
+CBT administration for **Ahmadu Bello University, Zaria**. Built with Flutter for web, Android, iOS, Windows, macOS, and Linux.
 
-## Current Scope
+## Staff portals
 
-This repository owns all non-student portals and administrative workflows.
+- Lecturer: course delivery, assessment and question preparation, marking, and result submission.
+- Moderator: question review, moderation feedback, and assessment quality checks.
+- Exam Officer: examination readiness, timetables, moderation tracking, eligibility, and result verification.
+- HoD: departmental academic supervision, lecturers, courses, moderation, and results.
+- General ICT Admin: university-wide staff access, academic setup, examination operations, and system oversight.
 
-- Lecturer Portal
-- Moderator Portal
-- Invigilator Portal
-- Exam Officer Portal
-- Records Department Portal
-- Department Admin Portal
-- Faculty Admin Portal
-- HoD Portal
-- Level Adviser Portal
-- DLC Director Portal
-- Super Admin Portal
+These are the only supported portal roles. Unknown and removed roles are denied portal access. Staff assignment uses `lecturer`, `moderator`, `exam_officer`, `hod`, and `ict_admin`. Existing `admin`, `system_admin`, and `super_admin` codes are accepted as aliases for General ICT Admin.
 
-## Workflows Owned Here
-
-- Lecturer course notices, assignments, marking, question preparation, and result recommendations.
-- Moderator question review, rubric checks, and moderation feedback.
-- Exam officer exam scheduling, notice publishing, question approval, invigilation oversight, and result release.
-- Records department student records, cohorts, course registration audit, carryover/repeat approval, CGPA and transcript preview.
-- Department/faculty curriculum, programme, staff allocation, course registration rules, and academic compliance.
-- Invigilator candidate check-in, hall monitoring, malpractice reports, and incident escalation.
-
-## Student App Separation
-
-The student-only app is `k-slas-my-course`.
-
-That app should contain only student-facing screens such as:
-
-- student courses
-- student course registration
-- student academic record and CGPA view
-- student assignment submission
-- student exams
-- student live classes
-- student results
-- student noticeboard
-- student notifications
-
-Any lecturer, exam officer, records, invigilator, moderator, HoD, department, faculty, or admin workflow belongs in this repository.
-
-## Run
+## Development
 
 ```sh
 flutter pub get
-flutter run -d chrome
-flutter run -d windows
+flutter run --dart-define=ABU_CBT_API_BASE_URL=https://YOUR-BACKEND-DOMAIN-OR-IP
+flutter analyze
+flutter test
 ```
 
-## Build Targets
+The backend URL must be configured for the university deployment. Web otherwise uses the current origin; native apps use localhost:8080. Backend authorisation must enforce the same five-role scope. Some inherited dashboards use demonstration data.
 
-```sh
-flutter build web --pwa-strategy offline-first
-flutter build apk
-flutter build windows
-```
+Local folder: `abu cbt admin`. Dart package: `abu_cbt_admin`.

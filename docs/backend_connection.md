@@ -1,35 +1,14 @@
 # Backend connection
 
-The admin UI now has a backend connection layer for the live K-SLAS Go API.
+Configure the backend for Ahmadu Bello University, Zaria:
 
-## Build with live VPS URL
-
-Use Flutter dart-define when building the web app:
-
-```bash
-flutter build web --release --dart-define=KSLAS_API_BASE_URL=https://YOUR-BACKEND-DOMAIN-OR-IP
+```sh
+flutter run --dart-define=ABU_CBT_API_BASE_URL=https://YOUR-BACKEND-DOMAIN-OR-IP
+flutter build web --release --dart-define=ABU_CBT_API_BASE_URL=https://YOUR-BACKEND-DOMAIN-OR-IP
 ```
 
-If the admin UI and backend are served from the same domain, the app automatically uses the current web origin.
+Web defaults to its current origin; native apps default to `http://localhost:8080`. No inherited production server is configured.
 
-## Connected endpoints
+Staff sign-in uses `/api/auth/login`. Lecturer question preparation uses `/api/lecturer/assessments`. Staff management uses `/api/staff`, `/api/departments`, and `/api/courses`.
 
-The first connected screen reads lecturer assessments from:
-
-```txt
-GET /api/lecturer/assessments
-```
-
-The API service also supports:
-
-```txt
-POST /api/lecturer/assessments
-POST /api/lecturer/assessments/{id}/publish
-POST /api/lecturer/assessments/{id}/close
-```
-
-## Current UI entry
-
-A floating `Live backend` button appears on the admin dashboard. It opens the live lecturer assessment panel and displays records returned from the backend.
-
-Next step: move this panel directly into the Lecturer workspace under `Exam Questions` after the backend authentication and course ID flow are finalized.
+The backend must support the five role codes documented in the README and enforce permissions on each request. This client update does not provision a university backend. Some panels still display demonstration data inherited from the original project.

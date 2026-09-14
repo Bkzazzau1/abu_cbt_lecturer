@@ -88,7 +88,7 @@ class LecturerCourseOverviewPanel extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Lecturer workspace for assigned DLC courses only: materials, videos, live classes, assessments, engagement, marking, and score submission.',
+              'Lecturer workspace for assigned ABU courses only: materials, videos, live classes, assessments, engagement, marking, and score submission.',
               style: text.bodyMedium,
             ),
             const SizedBox(height: 18),

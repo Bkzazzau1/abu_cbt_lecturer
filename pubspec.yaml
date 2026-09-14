@@ -1,5 +1,5 @@
-name: kslas_admin_ui
-description: "KSLAS multi-platform administrative console for academic operations."
+name: abu_cbt_admin
+description: "CBT administration for Ahmadu Bello University, Zaria."
 publish_to: 'none'
 
 version: 1.0.0+1
