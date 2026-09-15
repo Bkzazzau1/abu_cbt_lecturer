@@ -81,7 +81,8 @@ class ExamHallAvailabilityRequest {
     this.responseNote = '',
     this.approvedSlotId,
     this.scheduledAssessmentId,
-  });
+    DateTime? createdAt,
+  }) : createdAt = createdAt ?? DateTime.now();
 
   final String id;
   final HallTimeRequestType requestType;
@@ -97,7 +98,7 @@ class ExamHallAvailabilityRequest {
   String responseNote;
   String? approvedSlotId;
   String? scheduledAssessmentId;
-  final DateTime createdAt = DateTime.now();
+  final DateTime createdAt;
 
   String get paperId => sourceId;
 
@@ -112,6 +113,90 @@ class ExamHallAvailabilityState extends ChangeNotifier {
   ExamHallAvailabilityState._() {
     _requests.addAll([
       ExamHallAvailabilityRequest(
+        id: 'hall-history-7',
+        requestType: HallTimeRequestType.continuousAssessment,
+        sourceId: 'history-ca-7',
+        hallId: 'hall-a',
+        hallName: 'CBT Centre A',
+        capacity: 250,
+        date: DateTime(2026, 9, 15),
+        startTime: '14:00',
+        endTime: '15:00',
+        status: ExamHallAvailabilityStatus.approved,
+        responseNote: 'Hall and time confirmed available by ICT.',
+        createdAt: DateTime(2026, 9, 15, 10, 20),
+      ),
+      ExamHallAvailabilityRequest(
+        id: 'hall-history-6',
+        requestType: HallTimeRequestType.examination,
+        sourceId: 'history-exam-6',
+        hallId: 'hall-main',
+        hallName: 'Multi-Purpose CBT Hall',
+        capacity: 300,
+        date: DateTime(2026, 9, 20),
+        startTime: '09:00',
+        endTime: '12:00',
+        status: ExamHallAvailabilityStatus.approved,
+        responseNote: 'Hall and time confirmed available by ICT.',
+        createdAt: DateTime(2026, 9, 15, 9, 45),
+      ),
+      ExamHallAvailabilityRequest(
+        id: 'hall-history-5',
+        requestType: HallTimeRequestType.continuousAssessment,
+        sourceId: 'history-ca-5',
+        hallId: 'hall-b',
+        hallName: 'CBT Centre B',
+        capacity: 180,
+        date: DateTime(2026, 9, 19),
+        startTime: '10:00',
+        endTime: '11:00',
+        status: ExamHallAvailabilityStatus.rejected,
+        responseNote: 'Hall reserved for maintenance during the requested period.',
+        createdAt: DateTime(2026, 9, 15, 9, 10),
+      ),
+      ExamHallAvailabilityRequest(
+        id: 'hall-history-4',
+        requestType: HallTimeRequestType.examination,
+        sourceId: 'history-exam-4',
+        hallId: 'hall-c',
+        hallName: 'CBT Centre C',
+        capacity: 120,
+        date: DateTime(2026, 9, 19),
+        startTime: '13:00',
+        endTime: '16:00',
+        status: ExamHallAvailabilityStatus.rejected,
+        responseNote: 'Requested period overlaps an existing hall booking.',
+        createdAt: DateTime(2026, 9, 14, 16, 5),
+      ),
+      ExamHallAvailabilityRequest(
+        id: 'hall-history-3',
+        requestType: HallTimeRequestType.examination,
+        sourceId: 'history-exam-3',
+        hallId: 'hall-a',
+        hallName: 'CBT Centre A',
+        capacity: 250,
+        date: DateTime(2026, 9, 18),
+        startTime: '13:00',
+        endTime: '16:00',
+        status: ExamHallAvailabilityStatus.approved,
+        responseNote: 'Hall and time confirmed available by ICT.',
+        createdAt: DateTime(2026, 9, 14, 14, 30),
+      ),
+      ExamHallAvailabilityRequest(
+        id: 'hall-history-2',
+        requestType: HallTimeRequestType.continuousAssessment,
+        sourceId: 'history-ca-2',
+        hallId: 'hall-c',
+        hallName: 'CBT Centre C',
+        capacity: 120,
+        date: DateTime(2026, 9, 18),
+        startTime: '11:00',
+        endTime: '12:00',
+        status: ExamHallAvailabilityStatus.approved,
+        responseNote: 'Hall and time confirmed available by ICT.',
+        createdAt: DateTime(2026, 9, 14, 13, 50),
+      ),
+      ExamHallAvailabilityRequest(
         id: 'hall-history-1',
         requestType: HallTimeRequestType.examination,
         sourceId: 'history-only',
@@ -123,6 +208,7 @@ class ExamHallAvailabilityState extends ChangeNotifier {
         endTime: '12:00',
         status: ExamHallAvailabilityStatus.rejected,
         responseNote: 'Hall already reserved for another university activity.',
+        createdAt: DateTime(2026, 9, 14, 12, 15),
       ),
     ]);
   }
