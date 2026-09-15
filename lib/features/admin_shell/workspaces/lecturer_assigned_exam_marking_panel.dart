@@ -129,11 +129,15 @@ class _LecturerAssignedExamMarkingPanelState
       width: 230,
       child: DropdownButtonFormField<String>(
         initialValue: _course,
+        isExpanded: true,
         decoration: const InputDecoration(labelText: 'Assigned course'),
         items: [
-          const DropdownMenuItem(value: 'All', child: Text('All assigned courses')),
+          const DropdownMenuItem(
+            value: 'All',
+            child: Text('All assigned courses', overflow: TextOverflow.ellipsis),
+          ),
           for (final code in courseCodes)
-            DropdownMenuItem(value: code, child: Text(code)),
+            DropdownMenuItem(value: code, child: Text(code, overflow: TextOverflow.ellipsis)),
         ],
         onChanged: (value) => setState(() {
           _course = value ?? 'All';

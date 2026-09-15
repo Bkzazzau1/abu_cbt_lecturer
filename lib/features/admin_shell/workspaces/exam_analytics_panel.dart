@@ -180,6 +180,7 @@ class _ExamAnalyticsPanelState extends State<ExamAnalyticsPanel> {
               width: 210,
               child: DropdownButtonFormField<String>(
                 initialValue: _level,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Level',
                   prefixIcon: Icon(Icons.layers_outlined),
@@ -188,10 +189,13 @@ class _ExamAnalyticsPanelState extends State<ExamAnalyticsPanel> {
                 items: [
                   const DropdownMenuItem(
                     value: 'All Levels',
-                    child: Text('All Levels'),
+                    child: Text('All Levels', overflow: TextOverflow.ellipsis),
                   ),
                   for (final level in ExamOfficerAcademicRegistry.levels)
-                    DropdownMenuItem(value: level, child: Text(level)),
+                    DropdownMenuItem(
+                      value: level,
+                      child: Text(level, overflow: TextOverflow.ellipsis),
+                    ),
                 ],
                 onChanged: (value) {
                   if (value == null) return;
@@ -205,7 +209,8 @@ class _ExamAnalyticsPanelState extends State<ExamAnalyticsPanel> {
             SizedBox(
               width: 330,
               child: DropdownButtonFormField<String>(
-                value: selected.courseCode,
+                initialValue: selected.courseCode,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Particular exam / course',
                   prefixIcon: Icon(Icons.manage_search_outlined),

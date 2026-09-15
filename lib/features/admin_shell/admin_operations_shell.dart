@@ -318,13 +318,17 @@ class _AdminSideBar extends StatelessWidget {
               if (!lockRole) ...[
                 DropdownButtonFormField<AdminRole>(
                   initialValue: selectedRole,
+                  isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'Workspace role',
                     prefixIcon: Icon(Icons.admin_panel_settings_outlined),
                   ),
                   items: [
                     for (final role in AdminRole.values)
-                      DropdownMenuItem(value: role, child: Text(role.label)),
+                      DropdownMenuItem(
+                        value: role,
+                        child: Text(role.label, overflow: TextOverflow.ellipsis),
+                      ),
                   ],
                   onChanged: (role) {
                     if (role != null) onRoleChanged(role);

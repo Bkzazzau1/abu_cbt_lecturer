@@ -338,13 +338,17 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
                             width: 330,
                             child: DropdownButtonFormField<int>(
                               initialValue: _courseId,
+                              isExpanded: true,
                               decoration: const InputDecoration(
                                 labelText: 'Course',
                                 prefixIcon: Icon(Icons.menu_book_outlined),
                               ),
                               items: [
                                 for (final course in _courses)
-                                  DropdownMenuItem(value: course.id, child: Text(course.label)),
+                                  DropdownMenuItem(
+                                    value: course.id,
+                                    child: Text(course.label, overflow: TextOverflow.ellipsis),
+                                  ),
                               ],
                               onChanged: (value) => setState(() => _courseId = value),
                             ),
@@ -666,10 +670,14 @@ class _CaQuestionCardState extends State<_CaQuestionCard> {
                 width: 220,
                 child: DropdownButtonFormField<String>(
                   initialValue: draft.type,
+                  isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Question type'),
                   items: [
                     for (final format in _caFormats)
-                      DropdownMenuItem(value: format.type, child: Text(format.title)),
+                      DropdownMenuItem(
+                        value: format.type,
+                        child: Text(format.title, overflow: TextOverflow.ellipsis),
+                      ),
                   ],
                   onChanged: (value) {
                     if (value == null) return;
@@ -1121,6 +1129,7 @@ class _SlotRequestDialogState extends State<_SlotRequestDialog> {
             children: [
               DropdownButtonFormField<String>(
                 initialValue: _hallId,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Proposed CBT hall',
                   prefixIcon: Icon(Icons.meeting_room_outlined),
@@ -1129,7 +1138,10 @@ class _SlotRequestDialogState extends State<_SlotRequestDialog> {
                   for (final item in ExamHallAvailabilityState.halls)
                     DropdownMenuItem(
                       value: item.id,
-                      child: Text('${item.name} • ${item.capacity} seats'),
+                      child: Text(
+                        '${item.name} • ${item.capacity} seats',
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                 ],
                 onChanged: (value) {

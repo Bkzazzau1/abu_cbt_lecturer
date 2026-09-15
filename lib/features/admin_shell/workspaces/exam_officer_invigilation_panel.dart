@@ -174,6 +174,7 @@ class _ExamOfficerInvigilationPanelState
                           width: 240,
                           child: DropdownButtonFormField<String>(
                             initialValue: _dutyRole,
+                            isExpanded: true,
                             decoration: const InputDecoration(
                               labelText: 'Duty role',
                               prefixIcon: Icon(Icons.badge_outlined),
@@ -183,7 +184,7 @@ class _ExamOfficerInvigilationPanelState
                                   in ExamOfficerInvigilationState.dutyRoles)
                                 DropdownMenuItem(
                                   value: role,
-                                  child: Text(role),
+                                  child: Text(role, overflow: TextOverflow.ellipsis),
                                 ),
                             ],
                             onChanged: (value) {

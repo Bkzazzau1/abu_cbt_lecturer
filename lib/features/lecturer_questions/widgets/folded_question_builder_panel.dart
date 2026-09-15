@@ -1241,9 +1241,13 @@ class _QuestionCard extends StatelessWidget {
                 width: 230,
                 child: DropdownButtonFormField<String>(
                   initialValue: item.type,
+                  isExpanded: true,
                   items: [
                     for (final f in _formats)
-                      DropdownMenuItem(value: f.type, child: Text(f.title)),
+                      DropdownMenuItem(
+                        value: f.type,
+                        child: Text(f.title, overflow: TextOverflow.ellipsis),
+                      ),
                   ],
                   onChanged: (v) {
                     item.setType(v ?? item.type);
@@ -2739,11 +2743,12 @@ class _AiDraftQuestionsDialogState extends State<_AiDraftQuestionsDialog> {
                     width: 220,
                     child: DropdownButtonFormField<String>(
                       initialValue: _type,
+                      isExpanded: true,
                       items: [
                         for (final option in _typeOptions)
                           DropdownMenuItem(
                             value: option.$1,
-                            child: Text(option.$2),
+                            child: Text(option.$2, overflow: TextOverflow.ellipsis),
                           ),
                       ],
                       onChanged: (value) =>
