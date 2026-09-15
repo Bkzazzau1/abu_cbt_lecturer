@@ -107,6 +107,8 @@ class _ExamOfficerTimetableFlowPanelState
     final pending = requests
         .where((item) => item.status == ExamHallAvailabilityStatus.pending)
         .toList();
+    final hasRejected = requests
+        .any((item) => item.status == ExamHallAvailabilityStatus.rejected);
 
     return Container(
       width: double.infinity,
@@ -168,7 +170,9 @@ class _ExamOfficerTimetableFlowPanelState
                 : () => _requestHallTime(paper),
             icon: const Icon(Icons.meeting_room_outlined),
             label: Text(
-              sittings.isEmpty
+              hasRejected
+                  ? 'Reassign Hall & Time'
+                  : sittings.isEmpty
                   ? 'Request Hall & Time'
                   : 'Request Another Sitting',
             ),
@@ -286,7 +290,7 @@ class _ExamOfficerTimetableFlowPanelState
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Choose the proposed hall and time. ICT will only receive the operational hall/time request and will not see the examination paper or other academic details.',
                     ),
                     const SizedBox(height: 14),
