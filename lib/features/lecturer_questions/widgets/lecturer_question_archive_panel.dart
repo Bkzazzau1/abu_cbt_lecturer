@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../data/lecturer_question_api.dart';
 
-/// Read-only browser for previously created exam question papers. Reuses
-/// the same [LecturerQuestionApi] data source as the "Exam Questions"
-/// builder — drafts still being worked on stay in that builder; anything
-/// that has moved past draft (submitted for review, approved, closed) is
-/// treated as the historical record shown here.
+/// Read-only browser for every question asked in the last five academic
+/// sessions. This is the question bank the platform checks against before a
+/// question can be reused: anything asked within the last
+/// [ArchivedQuestionItem.noRepeatWindowSessions] sessions stays locked, and
+/// only becomes eligible again once that window has passed.
 class LecturerQuestionArchivePanel extends StatefulWidget {
   const LecturerQuestionArchivePanel({super.key, this.api});
 
@@ -20,9 +20,11 @@ class LecturerQuestionArchivePanel extends StatefulWidget {
 class _LecturerQuestionArchivePanelState
     extends State<LecturerQuestionArchivePanel> {
   late final LecturerQuestionApi _api;
-  late Future<List<QuestionPaperItem>> _future;
+  late Future<List<ArchivedQuestionItem>> _future;
   String _query = '';
   String _selectedCourse = 'All';
+  String _selectedSession = 'All';
+  String _selectedDifficulty = 'All';
 
   @override
   void initState() {
@@ -31,12 +33,7 @@ class _LecturerQuestionArchivePanelState
     _future = _load();
   }
 
-  Future<List<QuestionPaperItem>> _load() async {
-    final papers = await _api.fetchQuestionPapers();
-    final archived = papers.where((item) => item.status != 'draft').toList();
-    archived.sort((a, b) => b.id.compareTo(a.id));
-    return archived;
-  }
+  Future<List<ArchivedQuestionItem>> _load() => _api.fetchArchivedQuestions();
 
   @override
   void dispose() {
@@ -53,24 +50,38 @@ class _LecturerQuestionArchivePanelState
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return FutureBuilder<List<QuestionPaperItem>>(
+    return FutureBuilder<List<ArchivedQuestionItem>>(
       future: _future,
       builder: (context, snapshot) {
         final loading = snapshot.connectionState == ConnectionState.waiting;
-        final papers = snapshot.data ?? const [];
+        final questions = snapshot.data ?? const [];
         final courses = <String>{
           'All',
-          for (final paper in papers)
-            if (paper.courseLabel.isNotEmpty) paper.courseLabel,
+          for (final item in questions)
+            if (item.courseLabel.isNotEmpty) item.courseLabel,
         }.toList();
-        final filtered = papers.where((paper) {
+        final sessions = <String>{
+          'All',
+          for (final item in questions) item.session,
+        }.toList();
+        const difficulties = ['All', 'low', 'medium', 'high'];
+
+        final filtered = questions.where((item) {
           final matchesCourse =
-              _selectedCourse == 'All' || paper.courseLabel == _selectedCourse;
+              _selectedCourse == 'All' || item.courseLabel == _selectedCourse;
+          final matchesSession =
+              _selectedSession == 'All' || item.session == _selectedSession;
+          final matchesDifficulty =
+              _selectedDifficulty == 'All' ||
+              item.difficulty == _selectedDifficulty;
           final matchesQuery =
               _query.trim().isEmpty ||
-              paper.title.toLowerCase().contains(_query.toLowerCase()) ||
-              paper.courseLabel.toLowerCase().contains(_query.toLowerCase());
-          return matchesCourse && matchesQuery;
+              item.questionText.toLowerCase().contains(_query.toLowerCase()) ||
+              item.courseLabel.toLowerCase().contains(_query.toLowerCase());
+          return matchesCourse &&
+              matchesSession &&
+              matchesDifficulty &&
+              matchesQuery;
         }).toList();
 
         return Card(
@@ -85,7 +96,7 @@ class _LecturerQuestionArchivePanelState
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Archive · previous exam questions',
+                        'Archive · five-year question bank',
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
@@ -99,7 +110,9 @@ class _LecturerQuestionArchivePanelState
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Question papers you have previously submitted, for reference — drafts still in progress stay in Exam Questions.',
+                  'Every question asked in the last five sessions, kept so the '
+                  'same question is not set again until its no-repeat window '
+                  'has passed.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
@@ -114,13 +127,13 @@ class _LecturerQuestionArchivePanelState
                       child: TextField(
                         onChanged: (value) => setState(() => _query = value),
                         decoration: const InputDecoration(
-                          labelText: 'Search title or course',
+                          labelText: 'Search question or course',
                           prefixIcon: Icon(Icons.search),
                         ),
                       ),
                     ),
                     SizedBox(
-                      width: 240,
+                      width: 220,
                       child: DropdownButtonFormField<String>(
                         isExpanded: true,
                         initialValue: _selectedCourse,
@@ -138,6 +151,50 @@ class _LecturerQuestionArchivePanelState
                         decoration: const InputDecoration(labelText: 'Course'),
                       ),
                     ),
+                    SizedBox(
+                      width: 180,
+                      child: DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        initialValue: _selectedSession,
+                        items: [
+                          for (final session in sessions)
+                            DropdownMenuItem(
+                              value: session,
+                              child: Text(
+                                session == 'All' ? 'All sessions' : session,
+                              ),
+                            ),
+                        ],
+                        onChanged: (value) =>
+                            setState(() => _selectedSession = value ?? 'All'),
+                        decoration: const InputDecoration(labelText: 'Session'),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 180,
+                      child: DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        initialValue: _selectedDifficulty,
+                        items: [
+                          for (final difficulty in difficulties)
+                            DropdownMenuItem(
+                              value: difficulty,
+                              child: Text(
+                                difficulty == 'All'
+                                    ? 'All difficulties'
+                                    : difficulty[0].toUpperCase() +
+                                          difficulty.substring(1),
+                              ),
+                            ),
+                        ],
+                        onChanged: (value) => setState(
+                          () => _selectedDifficulty = value ?? 'All',
+                        ),
+                        decoration: const InputDecoration(
+                          labelText: 'Difficulty',
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -150,14 +207,15 @@ class _LecturerQuestionArchivePanelState
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Text(
-                      papers.isEmpty
-                          ? 'No archived question papers yet.'
-                          : 'No question papers match this filter.',
+                      questions.isEmpty
+                          ? 'No archived questions yet.'
+                          : 'No questions match this filter.',
                       style: TextStyle(color: scheme.onSurfaceVariant),
                     ),
                   )
                 else
-                  for (final paper in filtered) _ArchivedPaperTile(item: paper),
+                  for (final item in filtered)
+                    _ArchivedQuestionTile(item: item),
               ],
             ),
           ),
@@ -167,14 +225,28 @@ class _LecturerQuestionArchivePanelState
   }
 }
 
-class _ArchivedPaperTile extends StatelessWidget {
-  const _ArchivedPaperTile({required this.item});
+class _ArchivedQuestionTile extends StatelessWidget {
+  const _ArchivedQuestionTile({required this.item});
 
-  final QuestionPaperItem item;
+  final ArchivedQuestionItem item;
+
+  Color _difficultyColor(ColorScheme scheme) {
+    switch (item.difficulty) {
+      case 'high':
+        return scheme.error;
+      case 'medium':
+        return scheme.tertiary;
+      case 'low':
+      default:
+        return scheme.primary;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final locked = item.isLocked();
+    final difficultyColor = _difficultyColor(scheme);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -196,8 +268,8 @@ class _ArchivedPaperTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.title,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    item.questionText,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -211,34 +283,68 @@ class _ArchivedPaperTile extends StatelessWidget {
                     spacing: 14,
                     runSpacing: 6,
                     children: [
-                      Text('${item.questionCount} questions'),
-                      Text('${item.totalMarks} marks'),
-                      Text('${item.durationMinutes} min'),
+                      Text('Session ${item.session}'),
+                      Text(item.typeLabel),
+                      Text('${item.marks} marks'),
+                      Text(item.paperTitle),
                     ],
                   ),
                 ],
               ),
             ),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: scheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _Pill(
+                  label: item.difficultyLabel,
+                  color: difficultyColor,
+                  scheme: scheme,
                 ),
-                child: Text(
-                  item.statusLabel,
-                  style: TextStyle(
-                    color: scheme.onSecondaryContainer,
-                    fontWeight: FontWeight.w700,
-                  ),
+                const SizedBox(height: 6),
+                _Pill(
+                  label: locked
+                      ? 'Locked until ${item.eligibleAgainSession}'
+                      : 'Eligible to reuse',
+                  color: locked ? scheme.error : scheme.primary,
+                  scheme: scheme,
+                  outlined: true,
                 ),
-              ),
+              ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill({
+    required this.label,
+    required this.color,
+    required this.scheme,
+    this.outlined = false,
+  });
+
+  final String label;
+  final Color color;
+  final ColorScheme scheme;
+  final bool outlined;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: outlined ? Colors.transparent : color.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(999),
+        border: outlined ? Border.all(color: color) : null,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Text(
+          label,
+          style: TextStyle(color: color, fontWeight: FontWeight.w700),
         ),
       ),
     );

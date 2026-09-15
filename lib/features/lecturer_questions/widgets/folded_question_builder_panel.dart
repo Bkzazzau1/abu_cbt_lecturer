@@ -235,6 +235,69 @@ class _LecturerQuestionLivePanelState extends State<LecturerQuestionLivePanel> {
     });
   }
 
+  Future<void> _openAiDraftDialog() async {
+    final selectedCourse = _courses
+        .where((course) => course.id == _selectedCourseId)
+        .toList();
+    final selected = await showDialog<List<AiDraftedQuestion>>(
+      context: context,
+      builder: (_) => _AiDraftQuestionsDialog(
+        api: _api,
+        defaultType: _selectedFormat,
+        courseLabel: selectedCourse.isEmpty ? null : selectedCourse.first.label,
+      ),
+    );
+    if (selected == null || selected.isEmpty || !mounted) return;
+    setState(() {
+      for (final draft in selected) {
+        _questions.add(
+          _draftFromAi(
+            draft,
+            'q${DateTime.now().microsecondsSinceEpoch}_${_questions.length + 1}',
+          ),
+        );
+      }
+      _notice =
+          '${selected.length} AI-drafted question${selected.length == 1 ? '' : 's'} added — review and save each before submitting.';
+    });
+  }
+
+  _QuestionDraft _draftFromAi(AiDraftedQuestion ai, String id) {
+    final marks = ai.marks > 0 ? ai.marks.toString() : '1';
+    final type = ai.type.trim().isEmpty ? 'essay' : ai.type;
+
+    if (type == 'single_choice' || type == 'multiple_choice') {
+      const labels = ['A', 'B', 'C', 'D', 'E', 'F'];
+      final options = <_OptionDraft>[
+        for (var i = 0; i < ai.options.length && i < labels.length; i++)
+          _OptionDraft(
+            labels[i],
+            ai.options[i],
+            labels[i] == ai.correctOptionKey,
+          ),
+      ];
+      return _QuestionDraft(
+        id: id,
+        type: type,
+        topic: 'AI drafted',
+        marks: marks,
+        prompt: ai.prompt,
+        answer: '',
+        partialMarking: type == 'multiple_choice',
+        options: options.isEmpty ? null : options,
+      );
+    }
+
+    return _QuestionDraft(
+      id: id,
+      type: type,
+      topic: 'AI drafted',
+      marks: marks,
+      prompt: ai.prompt,
+      answer: ai.answer,
+    );
+  }
+
   void _addSet() {
     final count = int.tryParse(_batchCount.text.trim()) ?? 0;
     final marks = int.tryParse(_batchMarks.text.trim()) ?? 0;
@@ -538,6 +601,7 @@ class _LecturerQuestionLivePanelState extends State<LecturerQuestionLivePanel> {
                           onAddSet: _addSet,
                           onUploadQuestions: _uploadQuestions,
                           onUploadAnswerScript: _uploadAnswerScript,
+                          onOpenAiDraft: _openAiDraftDialog,
                         );
                         final list = _QuestionList(
                           questions: _questions,
@@ -864,6 +928,7 @@ class _FormatAccordion extends StatelessWidget {
     required this.onAddSet,
     required this.onUploadQuestions,
     required this.onUploadAnswerScript,
+    required this.onOpenAiDraft,
   });
   final String selected;
   final TextEditingController batchCount;
@@ -877,6 +942,7 @@ class _FormatAccordion extends StatelessWidget {
   final VoidCallback onAddSet;
   final VoidCallback onUploadQuestions;
   final VoidCallback onUploadAnswerScript;
+  final VoidCallback onOpenAiDraft;
 
   @override
   Widget build(BuildContext context) {
@@ -893,6 +959,12 @@ class _FormatAccordion extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
+          FilledButton.tonalIcon(
+            onPressed: onOpenAiDraft,
+            icon: const Icon(Icons.auto_awesome_outlined),
+            label: const Text('AI: Draft questions for me'),
+          ),
+          const SizedBox(height: 14),
           for (final format in _formats)
             _FormatTile(
               format: format,
@@ -2517,5 +2589,267 @@ class _QuestionDraft {
       payload['allowed_file_types'] = ['pdf', 'docx', 'zip', 'jpg', 'png'];
     }
     return payload;
+  }
+}
+
+/// Dialog for the "AI: Draft questions for me" flow. Collects a topic and
+/// question shape, asks the backend AI service for drafts, and lets the
+/// lecturer pick which (if any) to hand back to the paper — nothing is
+/// added to the question list until they explicitly confirm a selection.
+class _AiDraftQuestionsDialog extends StatefulWidget {
+  const _AiDraftQuestionsDialog({
+    required this.api,
+    required this.defaultType,
+    this.courseLabel,
+  });
+
+  final LecturerQuestionApi api;
+  final String defaultType;
+  final String? courseLabel;
+
+  @override
+  State<_AiDraftQuestionsDialog> createState() =>
+      _AiDraftQuestionsDialogState();
+}
+
+class _AiDraftQuestionsDialogState extends State<_AiDraftQuestionsDialog> {
+  final _topicController = TextEditingController();
+  final _countController = TextEditingController(text: '5');
+  final _marksController = TextEditingController(text: '1');
+  late String _type = widget.defaultType;
+  bool _loading = false;
+  String? _error;
+  List<AiDraftedQuestion> _results = const [];
+  final Set<int> _selected = {};
+
+  static const _typeOptions = [
+    ('single_choice', 'Single choice'),
+    ('multiple_choice', 'Multiple choice'),
+    ('essay', 'Essay'),
+    ('fill_blank', 'Fill in the blank'),
+  ];
+
+  @override
+  void dispose() {
+    _topicController.dispose();
+    _countController.dispose();
+    _marksController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _generate() async {
+    final topic = _topicController.text.trim();
+    if (topic.isEmpty) {
+      setState(() => _error = 'Describe the topic you want questions for.');
+      return;
+    }
+    final count = int.tryParse(_countController.text.trim()) ?? 0;
+    if (count <= 0 || count > 20) {
+      setState(() => _error = 'Enter a question count between 1 and 20.');
+      return;
+    }
+    final marks = int.tryParse(_marksController.text.trim()) ?? 1;
+
+    setState(() {
+      _loading = true;
+      _error = null;
+      _results = const [];
+      _selected.clear();
+    });
+
+    final result = await widget.api.draftQuestions(
+      topic: topic,
+      questionType: _type,
+      count: count,
+      marksPerQuestion: marks <= 0 ? 1 : marks,
+      courseLabel: widget.courseLabel,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      if (result.available) {
+        _results = result.questions;
+        if (_results.isEmpty) {
+          _error = 'The AI had no drafts to suggest for that topic.';
+        } else {
+          _selected.addAll(List.generate(_results.length, (i) => i));
+        }
+      } else {
+        _error = result.message;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return AlertDialog(
+      title: const Row(
+        children: [
+          Icon(Icons.auto_awesome_outlined),
+          SizedBox(width: 10),
+          Text('AI: Draft questions'),
+        ],
+      ),
+      content: SizedBox(
+        width: 520,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Describe a topic and the AI will draft candidate questions '
+                'for you to review, edit, and add to the paper. Nothing is '
+                'added until you select and confirm below.',
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(Icons.info_outline, size: 14, color: scheme.outline),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Demo mode: drafts are generated locally as examples, not by a live AI model.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: scheme.outline,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _topicController,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Topic / learning outcome',
+                  hintText: 'e.g. Binary search trees and traversal',
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  SizedBox(
+                    width: 220,
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _type,
+                      items: [
+                        for (final option in _typeOptions)
+                          DropdownMenuItem(
+                            value: option.$1,
+                            child: Text(option.$2),
+                          ),
+                      ],
+                      onChanged: (value) =>
+                          setState(() => _type = value ?? _type),
+                      decoration: const InputDecoration(
+                        labelText: 'Question type',
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 90,
+                    child: TextField(
+                      controller: _countController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Count'),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 90,
+                    child: TextField(
+                      controller: _marksController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Marks'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              FilledButton.icon(
+                onPressed: _loading ? null : _generate,
+                icon: _loading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.auto_awesome_outlined),
+                label: Text(_loading ? 'Drafting...' : 'Draft questions'),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: scheme.errorContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    _error!,
+                    style: TextStyle(color: scheme.onErrorContainer),
+                  ),
+                ),
+              ],
+              if (_results.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'Select the drafts to add (${_selected.length}/${_results.length})',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                for (var i = 0; i < _results.length; i++)
+                  CheckboxListTile(
+                    value: _selected.contains(i),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    onChanged: (checked) => setState(() {
+                      if (checked == true) {
+                        _selected.add(i);
+                      } else {
+                        _selected.remove(i);
+                      }
+                    }),
+                    title: Text(
+                      _results[i].prompt.isEmpty
+                          ? '(No prompt returned)'
+                          : _results[i].prompt,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: _results[i].options.isEmpty
+                        ? null
+                        : Text(
+                            _results[i].options.join(' · '),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                  ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _selected.isEmpty
+              ? null
+              : () => Navigator.pop(context, [
+                  for (final i in _selected) _results[i],
+                ]),
+          child: const Text('Add selected to paper'),
+        ),
+      ],
+    );
   }
 }

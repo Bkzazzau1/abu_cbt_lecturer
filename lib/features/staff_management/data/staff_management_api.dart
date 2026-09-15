@@ -1,85 +1,144 @@
 import '../../../models/admin_role.dart';
-import '../../../core/network/api_client.dart';
+import '../../../core/network/api_client.dart' show ApiException;
 
+/// Everything in this file runs locally — no backend is required to demo the
+/// General ICT Admin staff management screen. When a real backend is ready,
+/// this is the file to swap back to `ApiClient` calls against the documented
+/// `/api/staff`, `/api/departments`, `/api/courses`, and
+/// `/api/admin/staff-roles` contracts — the model shapes already match them.
 class StaffManagementApi {
-  StaffManagementApi({ApiClient? client}) : _client = client ?? ApiClient();
+  StaffManagementApi();
 
-  final ApiClient _client;
+  static final List<Map<String, dynamic>> _demoStaff = [
+    {
+      'id': '1',
+      'staff_number': 'SYS-001',
+      'first_name': 'Chinedu',
+      'last_name': 'Okafor',
+      'email': 'ictadmin.demo@abu.edu.ng',
+      'phone': '',
+      'primary_role': 'ict_admin',
+      'department_id': '',
+      'status': 'active',
+    },
+    {
+      'id': '2',
+      'staff_number': 'HOD-001',
+      'first_name': 'Fatima',
+      'last_name': 'Sani',
+      'email': 'hod.demo@abu.edu.ng',
+      'phone': '',
+      'primary_role': 'hod',
+      'department_id': '1',
+      'status': 'active',
+    },
+    {
+      'id': '3',
+      'staff_number': 'LEC-001',
+      'first_name': 'Amina',
+      'last_name': 'Bello',
+      'email': 'lecturer.demo@abu.edu.ng',
+      'phone': '',
+      'primary_role': 'lecturer',
+      'department_id': '1',
+      'status': 'active',
+    },
+    {
+      'id': '4',
+      'staff_number': 'MOD-001',
+      'first_name': 'Ibrahim',
+      'last_name': 'Sule',
+      'email': 'moderator.demo@abu.edu.ng',
+      'phone': '',
+      'primary_role': 'moderator',
+      'department_id': '1',
+      'status': 'active',
+    },
+    {
+      'id': '5',
+      'staff_number': 'EXO-001',
+      'first_name': 'Musa',
+      'last_name': 'Ibrahim',
+      'email': 'examofficer.demo@abu.edu.ng',
+      'phone': '',
+      'primary_role': 'exam_officer',
+      'department_id': '1',
+      'status': 'active',
+    },
+  ];
+
+  static final List<Map<String, dynamic>> _demoDepartments = [
+    {'id': '1', 'code': 'CSC', 'name': 'Computer Science'},
+    {'id': '2', 'code': 'MTH', 'name': 'Mathematics'},
+  ];
+
+  static final List<Map<String, dynamic>> _demoCourses = [
+    {'id': '1', 'code': 'CSC101', 'title': 'Introduction to Computer Science'},
+    {'id': '2', 'code': 'CSC102', 'title': 'Programming Fundamentals'},
+    {'id': '3', 'code': 'CSC305', 'title': 'Data Structures'},
+  ];
 
   Future<List<StaffItem>> fetchStaff() async {
-    try {
-      final data = await _client.get('/api/staff');
-      dynamic rows = data;
-      if (data is Map) rows = data['items'] ?? data['data'] ?? data['results'];
-      if (rows is! List) return const [];
-      return rows.whereType<Map>().map((raw) {
-        final json = raw.map((key, value) => MapEntry(key.toString(), value));
-        return StaffItem.fromJson(json);
-      }).toList();
-    } catch (_) {
-      return const [
-        StaffItem(
-          id: '1',
-          staffNumber: 'SYS-001',
-          name: 'General ICT Admin',
-          email: 'ict-admin@example.com',
-          phone: '',
-          primaryRole: 'ict_admin',
-          departmentId: '',
-          active: true,
-        ),
-      ];
-    }
+    await Future.delayed(const Duration(milliseconds: 250));
+    return _demoStaff
+        .map((raw) => StaffItem.fromJson(Map<String, dynamic>.from(raw)))
+        .toList();
   }
 
   Future<StaffReferenceData> fetchReferences() async {
-    try {
-      final results = await Future.wait<dynamic>([
-        _client.get('/api/departments'),
-        _client.get('/api/courses'),
-      ]);
-      return StaffReferenceData(
-        departments: _referenceOptions(
-          results[0],
-          codeKey: 'code',
-          titleKey: 'name',
-        ),
-        courses: _referenceOptions(
-          results[1],
-          codeKey: 'code',
-          titleKey: 'title',
-        ),
-      );
-    } catch (_) {
-      return const StaffReferenceData(departments: [], courses: []);
-    }
+    await Future.delayed(const Duration(milliseconds: 200));
+    return StaffReferenceData(
+      departments: _demoDepartments
+          .map(
+            (raw) => ReferenceOption(
+              id: raw['id'].toString(),
+              label: '${raw['code']} • ${raw['name']}',
+            ),
+          )
+          .toList(),
+      courses: _demoCourses
+          .map(
+            (raw) => ReferenceOption(
+              id: raw['id'].toString(),
+              label: '${raw['code']} • ${raw['title']}',
+            ),
+          )
+          .toList(),
+    );
   }
 
   Future<void> createStaff(Map<String, dynamic> payload) async {
     if (!staffRoleOptions.contains(payload['role_code'])) {
       throw const ApiException('Unsupported staff role');
     }
-    await _client.post('/api/staff', body: payload);
+    await Future.delayed(const Duration(milliseconds: 400));
+    _demoStaff.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'staff_number': payload['staff_number']?.toString() ?? '',
+      'first_name': payload['first_name']?.toString() ?? '',
+      'last_name': payload['last_name']?.toString() ?? '',
+      'email': payload['email']?.toString() ?? '',
+      'phone': payload['phone']?.toString() ?? '',
+      'primary_role': payload['role_code']?.toString() ?? 'lecturer',
+      'department_id': payload['department_id']?.toString() ?? '',
+      'status': 'active',
+    });
   }
 
   Future<void> resetPassword({
     required String staffId,
     required String password,
   }) async {
-    await _client.post(
-      '/api/staff/$staffId/reset-password',
-      body: {'password': password},
-    );
+    await Future.delayed(const Duration(milliseconds: 300));
   }
 
   Future<void> updateStaffStatus({
     required String staffId,
     required bool active,
   }) async {
-    await _client.patch(
-      '/api/staff/$staffId/status',
-      body: {'status': active ? 'active' : 'inactive'},
-    );
+    await Future.delayed(const Duration(milliseconds: 300));
+    final raw = _findStaff(staffId);
+    raw['status'] = active ? 'active' : 'inactive';
   }
 
   Future<void> assignRole({
@@ -91,56 +150,22 @@ class StaffManagementApi {
     if (!staffRoleOptions.contains(role)) {
       throw const ApiException('Unsupported staff role');
     }
-    final numericStaffId = int.tryParse(staffId);
-    if (numericStaffId == null) {
-      throw const ApiException('Invalid staff selected');
+    await Future.delayed(const Duration(milliseconds: 300));
+    final raw = _findStaff(staffId);
+    raw['primary_role'] = role;
+    if (departmentId != null && departmentId.isNotEmpty) {
+      raw['department_id'] = departmentId;
     }
-
-    final numericDepartmentId = int.tryParse(departmentId ?? '');
-    final numericCourseId = int.tryParse(courseId ?? '');
-    final useCourseScope = numericCourseId != null;
-
-    final payload = <String, dynamic>{
-      'staff_id': numericStaffId,
-      'role': role,
-      'scope': useCourseScope ? 'course' : 'department',
-    };
-
-    if (useCourseScope) {
-      payload['course_id'] = numericCourseId;
-    } else if (numericDepartmentId != null) {
-      payload['department_id'] = numericDepartmentId;
-    }
-
-    await _client.post('/api/admin/staff-roles', body: payload);
   }
 
-  List<ReferenceOption> _referenceOptions(
-    dynamic data, {
-    required String codeKey,
-    required String titleKey,
-  }) {
-    dynamic rows = data;
-    if (data is Map) rows = data['items'] ?? data['data'] ?? data['results'];
-    if (rows is! List) return const [];
-    return rows
-        .whereType<Map>()
-        .map((raw) {
-          final json = raw.map((key, value) => MapEntry(key.toString(), value));
-          final id = json['id']?.toString() ?? '';
-          final code = json[codeKey]?.toString() ?? '';
-          final title = json[titleKey]?.toString() ?? '';
-          final label = [
-            code,
-            title,
-          ].where((part) => part.isNotEmpty).join(' • ');
-          return ReferenceOption(id: id, label: label.isEmpty ? id : label);
-        })
-        .where((option) => option.id.isNotEmpty)
-        .toList();
+  Map<String, dynamic> _findStaff(String staffId) {
+    for (final raw in _demoStaff) {
+      if (raw['id'] == staffId) return raw;
+    }
+    throw const ApiException('Staff not found');
   }
 
-  void close() => _client.close();
+  void close() {}
 }
 
 class StaffReferenceData {

@@ -1,46 +1,251 @@
-import '../../../core/network/api_client.dart';
+import '../../../core/network/api_client.dart' show ApiException;
 
+/// Everything in this file runs locally — no backend is required to demo the
+/// exam officer / moderator workflow screens. The demo exams below cover
+/// every stage of the lecturer -> exam officer -> moderator -> exam officer
+/// -> HoD -> scheduling -> release pipeline. When a real backend is ready,
+/// this is the file to swap back to `ApiClient` calls against the documented
+/// `/api/exams` contract — the model shapes already match it.
 class ExamWorkflowApi {
-  ExamWorkflowApi({ApiClient? client}) : _client = client ?? ApiClient();
+  ExamWorkflowApi();
 
-  final ApiClient _client;
+  static final List<Map<String, dynamic>> _demoExams = [
+    {
+      'id': 7001,
+      'course_code': 'CSC102',
+      'course_title': 'Programming Fundamentals',
+      'title': 'CSC102 Second Semester Final',
+      'status': 'draft',
+      'delivery_mode': 'cbt',
+      'duration_minutes': 90,
+      'venue': '',
+      'question_payload': {
+        'questions': List.generate(
+          30,
+          (i) => {
+            'type': 'single_choice',
+            'marks': 1,
+            'prompt': 'Sample question ${i + 1}',
+          },
+        ),
+        'workflow_notes': <Map<String, dynamic>>[],
+      },
+    },
+    {
+      'id': 7002,
+      'course_code': 'CSC101',
+      'course_title': 'Introduction to Computer Science',
+      'title': 'CSC101 First Semester Final',
+      'status': 'officer_review',
+      'delivery_mode': 'cbt',
+      'duration_minutes': 90,
+      'venue': '',
+      'question_payload': {
+        'questions': List.generate(
+          30,
+          (i) => {
+            'type': 'single_choice',
+            'marks': 1,
+            'prompt': 'Sample question ${i + 1}',
+          },
+        ),
+        'workflow_notes': [
+          {
+            'action': 'submit-to-officer',
+            'comment': 'Ready for exam officer review.',
+            'user_id': 'demo-lecturer',
+            'at': '2026-08-20T09:00:00Z',
+          },
+        ],
+      },
+    },
+    {
+      'id': 7003,
+      'course_code': 'CSC305',
+      'course_title': 'Data Structures',
+      'title': 'Data Structures Mid-Semester CBT',
+      'status': 'moderator_review',
+      'delivery_mode': 'cbt',
+      'duration_minutes': 60,
+      'venue': '',
+      'question_payload': {
+        'questions': List.generate(
+          20,
+          (i) => {
+            'type': 'essay',
+            'marks': 2,
+            'prompt': 'Sample question ${i + 1}',
+          },
+        ),
+        'workflow_notes': [
+          {
+            'action': 'submit-to-officer',
+            'comment': 'Please confirm marks scheme.',
+            'user_id': 'demo-lecturer',
+            'at': '2026-08-18T09:00:00Z',
+          },
+          {
+            'action': 'send-to-moderator',
+            'comment': 'Forwarding for moderation.',
+            'user_id': 'demo-exam-officer',
+            'at': '2026-08-19T09:00:00Z',
+          },
+        ],
+      },
+    },
+    {
+      'id': 7004,
+      'course_code': 'CSC101',
+      'course_title': 'Introduction to Computer Science',
+      'title': 'CSC101 Mid-Semester CBT',
+      'status': 'moderated',
+      'delivery_mode': 'cbt',
+      'duration_minutes': 60,
+      'venue': '',
+      'question_payload': {
+        'questions': List.generate(
+          15,
+          (i) => {
+            'type': 'single_choice',
+            'marks': 1,
+            'prompt': 'Sample question ${i + 1}',
+          },
+        ),
+        'workflow_notes': [
+          {
+            'action': 'moderator-return',
+            'comment': 'Approved, no corrections needed.',
+            'user_id': 'demo-moderator',
+            'at': '2026-08-15T09:00:00Z',
+          },
+        ],
+      },
+    },
+    {
+      'id': 7005,
+      'course_code': 'CSC102',
+      'course_title': 'Programming Fundamentals',
+      'title': 'CSC102 Mid-Semester CBT',
+      'status': 'lecturer_correction',
+      'delivery_mode': 'cbt',
+      'duration_minutes': 60,
+      'venue': '',
+      'question_payload': {
+        'questions': List.generate(
+          20,
+          (i) => {
+            'type': 'fill_blank',
+            'marks': 1,
+            'prompt': 'Sample question ${i + 1}',
+          },
+        ),
+        'workflow_notes': [
+          {
+            'action': 'send-back-to-lecturer',
+            'comment': 'Question 12 has two correct options — please fix.',
+            'user_id': 'demo-moderator',
+            'at': '2026-08-10T09:00:00Z',
+          },
+        ],
+      },
+    },
+    {
+      'id': 7006,
+      'course_code': 'CSC305',
+      'course_title': 'Data Structures',
+      'title': 'Data Structures First Semester Final',
+      'status': 'scheduled',
+      'delivery_mode': 'cbt',
+      'start_time': '2026-09-25T09:00:00Z',
+      'end_time': '2026-09-25T11:00:00Z',
+      'duration_minutes': 120,
+      'venue': 'CBT Centre 1',
+      'question_payload': {
+        'questions': List.generate(
+          30,
+          (i) => {
+            'type': 'single_choice',
+            'marks': 1,
+            'prompt': 'Sample question ${i + 1}',
+          },
+        ),
+        'workflow_notes': [
+          {
+            'action': 'schedule',
+            'comment': 'Exam scheduled for student access.',
+            'user_id': 'demo-exam-officer',
+            'at': '2026-09-01T09:00:00Z',
+          },
+        ],
+      },
+    },
+    {
+      'id': 7007,
+      'course_code': 'CSC101',
+      'course_title': 'Introduction to Computer Science',
+      'title': 'CSC101 Previous Semester Final',
+      'status': 'released',
+      'delivery_mode': 'cbt',
+      'start_time': '2026-04-10T09:00:00Z',
+      'end_time': '2026-04-10T11:00:00Z',
+      'duration_minutes': 120,
+      'venue': 'ICT Lab A',
+      'question_payload': {
+        'questions': List.generate(
+          30,
+          (i) => {
+            'type': 'single_choice',
+            'marks': 1,
+            'prompt': 'Sample question ${i + 1}',
+          },
+        ),
+        'workflow_notes': [
+          {
+            'action': 'release',
+            'comment': 'Released to students.',
+            'user_id': 'demo-exam-officer',
+            'at': '2026-04-09T09:00:00Z',
+          },
+        ],
+      },
+    },
+  ];
 
   Future<List<ExamWorkflowItem>> fetchExams() async {
-    final data = await _client.get('/api/exams');
-    dynamic rows = data;
-    if (data is Map) {
-      rows = data['items'] ?? data['data'] ?? data['results'];
-    }
-    if (rows is! List) return const [];
-
-    return rows.whereType<Map>().map((raw) {
-      final json = raw.map((key, value) => MapEntry(key.toString(), value));
-      return ExamWorkflowItem.fromJson(json);
-    }).toList();
+    await Future.delayed(const Duration(milliseconds: 250));
+    return _demoExams
+        .map((raw) => ExamWorkflowItem.fromJson(_deepCopy(raw)))
+        .toList();
   }
 
   Future<ExamWorkflowItem> submitToOfficer(int examId, String comment) {
-    return _postAction(examId, 'submit-to-officer', comment);
+    return _postAction(examId, 'submit-to-officer', 'officer_review', comment);
   }
 
   Future<ExamWorkflowItem> sendToModerator(int examId, String comment) {
-    return _postAction(examId, 'send-to-moderator', comment);
+    return _postAction(
+      examId,
+      'send-to-moderator',
+      'moderator_review',
+      comment,
+    );
   }
 
   Future<ExamWorkflowItem> moderatorReturn(int examId, String comment) {
-    return _postAction(examId, 'moderator-return', comment);
+    return _postAction(examId, 'moderator-return', 'moderated', comment);
   }
 
   Future<ExamWorkflowItem> sendBackToLecturer(int examId, String comment) {
-    return _postAction(examId, 'send-back-to-lecturer', comment);
+    return _postAction(
+      examId,
+      'send-back-to-lecturer',
+      'lecturer_correction',
+      comment,
+    );
   }
 
-  Future<ExamWorkflowItem> releaseExam(int examId, String comment) async {
-    final data = await _client.post(
-      '/api/exams/$examId/release',
-      body: {'comment': comment},
-    );
-    return ExamWorkflowItem.fromJson(_asStringMap(data));
+  Future<ExamWorkflowItem> releaseExam(int examId, String comment) {
+    return _postAction(examId, 'release', 'released', comment);
   }
 
   Future<ExamWorkflowItem> scheduleExam({
@@ -52,40 +257,71 @@ class ExamWorkflowApi {
     required String comment,
     List<int> invigilatorIds = const [],
   }) async {
-    final data = await _client.post(
-      '/api/exams/$examId/schedule',
-      body: {
-        'start_time': startTime.toUtc().toIso8601String(),
-        'end_time': endTime.toUtc().toIso8601String(),
-        'duration_minutes': durationMinutes,
-        'venue': venue,
-        'invigilator_ids': invigilatorIds,
-        'comment': comment,
-      },
-    );
-    return ExamWorkflowItem.fromJson(_asStringMap(data));
+    await Future.delayed(const Duration(milliseconds: 400));
+    final raw = _findRaw(examId);
+    raw['start_time'] = startTime.toUtc().toIso8601String();
+    raw['end_time'] = endTime.toUtc().toIso8601String();
+    raw['duration_minutes'] = durationMinutes;
+    raw['venue'] = venue;
+    raw['status'] = 'scheduled';
+    _appendNote(raw, 'schedule', comment, 'demo-exam-officer');
+    return ExamWorkflowItem.fromJson(_deepCopy(raw));
   }
 
   Future<ExamWorkflowItem> _postAction(
     int examId,
     String action,
+    String nextStatus,
     String comment,
   ) async {
-    final data = await _client.post(
-      '/api/exams/$examId/$action',
-      body: {'comment': comment},
-    );
-    return ExamWorkflowItem.fromJson(_asStringMap(data));
+    await Future.delayed(const Duration(milliseconds: 400));
+    final raw = _findRaw(examId);
+    raw['status'] = nextStatus;
+    _appendNote(raw, action, comment, 'demo-user');
+    return ExamWorkflowItem.fromJson(_deepCopy(raw));
   }
 
-  Map<String, dynamic> _asStringMap(dynamic data) {
-    if (data is Map) {
-      return data.map((key, value) => MapEntry(key.toString(), value));
+  Map<String, dynamic> _findRaw(int examId) {
+    for (final raw in _demoExams) {
+      if (raw['id'] == examId) return raw;
     }
-    return const {};
+    throw const ApiException('Exam not found');
   }
 
-  void close() => _client.close();
+  void _appendNote(
+    Map<String, dynamic> raw,
+    String action,
+    String comment,
+    String userId,
+  ) {
+    final payload = Map<String, dynamic>.from(
+      raw['question_payload'] as Map? ?? const {},
+    );
+    final notes = List<Map<String, dynamic>>.from(
+      (payload['workflow_notes'] as List? ?? const []).whereType<Map>().map(
+        (note) => Map<String, dynamic>.from(note),
+      ),
+    );
+    notes.insert(0, {
+      'action': action,
+      'comment': comment,
+      'user_id': userId,
+      'at': DateTime.now().toUtc().toIso8601String(),
+    });
+    payload['workflow_notes'] = notes;
+    raw['question_payload'] = payload;
+  }
+
+  Map<String, dynamic> _deepCopy(Map<String, dynamic> raw) {
+    final copy = Map<String, dynamic>.from(raw);
+    final payload = copy['question_payload'];
+    if (payload is Map) {
+      copy['question_payload'] = Map<String, dynamic>.from(payload);
+    }
+    return copy;
+  }
+
+  void close() {}
 }
 
 class ExamWorkflowItem {

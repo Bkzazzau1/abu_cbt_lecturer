@@ -1,24 +1,87 @@
-import '../../../core/network/api_client.dart';
-
+/// Everything in this file runs locally — no backend is required to demo the
+/// General ICT Admin / HoD academic setup screen (faculties, departments,
+/// programmes, courses, and lecturer assignment). When a real backend is
+/// ready, this is the file to swap back to `ApiClient` calls against the
+/// documented `/api/faculties`, `/api/departments`, `/api/programmes`,
+/// `/api/courses`, and `/api/staff` contracts — the model shapes already
+/// match them.
 class AcademicSetupApi {
-  AcademicSetupApi({ApiClient? client}) : _client = client ?? ApiClient();
+  AcademicSetupApi();
 
-  final ApiClient _client;
+  static final List<Map<String, dynamic>> _demoFaculties = [
+    {'id': '1', 'code': 'SCI', 'name': 'Science'},
+  ];
+
+  static final List<Map<String, dynamic>> _demoDepartments = [
+    {'id': '1', 'faculty_id': '1', 'code': 'CSC', 'name': 'Computer Science'},
+    {'id': '2', 'faculty_id': '1', 'code': 'MTH', 'name': 'Mathematics'},
+  ];
+
+  static final List<Map<String, dynamic>> _demoProgrammes = [
+    {
+      'id': '1',
+      'department_id': '1',
+      'code': 'CSC-BSC',
+      'name': 'B.Sc. Computer Science',
+      'level_type': 'undergraduate',
+    },
+  ];
+
+  static final List<Map<String, dynamic>> _demoCourses = [
+    {
+      'id': '1',
+      'department_id': '1',
+      'programme_id': '1',
+      'code': 'CSC101',
+      'title': 'Introduction to Computer Science',
+      'unit': '3',
+      'semester': 'first',
+      'level': '100',
+      'is_active': true,
+    },
+    {
+      'id': '2',
+      'department_id': '1',
+      'programme_id': '1',
+      'code': 'CSC102',
+      'title': 'Programming Fundamentals',
+      'unit': '3',
+      'semester': 'second',
+      'level': '100',
+      'is_active': true,
+    },
+    {
+      'id': '3',
+      'department_id': '1',
+      'programme_id': '1',
+      'code': 'CSC305',
+      'title': 'Data Structures',
+      'unit': '3',
+      'semester': 'first',
+      'level': '300',
+      'is_active': true,
+    },
+  ];
+
+  static final List<Map<String, dynamic>> _demoStaff = [
+    {
+      'id': '3',
+      'first_name': 'Amina',
+      'last_name': 'Bello',
+      'email': 'lecturer.demo@abu.edu.ng',
+      'primary_role': 'lecturer',
+      'status': 'active',
+    },
+  ];
 
   Future<AcademicSetupData> fetchSetup() async {
-    final results = await Future.wait<dynamic>([
-      _client.get('/api/faculties'),
-      _client.get('/api/departments'),
-      _client.get('/api/programmes'),
-      _client.get('/api/courses'),
-      _client.get('/api/staff'),
-    ]);
+    await Future.delayed(const Duration(milliseconds: 250));
     return AcademicSetupData(
-      faculties: _list(results[0]).map(AcademicFaculty.fromJson).toList(),
-      departments: _list(results[1]).map(AcademicDepartment.fromJson).toList(),
-      programmes: _list(results[2]).map(AcademicProgramme.fromJson).toList(),
-      courses: _list(results[3]).map(AcademicCourse.fromJson).toList(),
-      lecturers: _list(results[4])
+      faculties: _demoFaculties.map(AcademicFaculty.fromJson).toList(),
+      departments: _demoDepartments.map(AcademicDepartment.fromJson).toList(),
+      programmes: _demoProgrammes.map(AcademicProgramme.fromJson).toList(),
+      courses: _demoCourses.map(AcademicCourse.fromJson).toList(),
+      lecturers: _demoStaff
           .map(AcademicStaff.fromJson)
           .where((staff) => staff.role == 'lecturer' && staff.active)
           .toList(),
@@ -26,42 +89,58 @@ class AcademicSetupApi {
   }
 
   Future<void> createFaculty(Map<String, dynamic> payload) async {
-    await _client.post('/api/faculties', body: payload);
+    await Future.delayed(const Duration(milliseconds: 300));
+    _demoFaculties.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'code': payload['code']?.toString() ?? '',
+      'name': payload['name']?.toString() ?? '',
+    });
   }
 
   Future<void> createDepartment(Map<String, dynamic> payload) async {
-    await _client.post('/api/departments', body: payload);
+    await Future.delayed(const Duration(milliseconds: 300));
+    _demoDepartments.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'faculty_id': payload['faculty_id']?.toString() ?? '',
+      'code': payload['code']?.toString() ?? '',
+      'name': payload['name']?.toString() ?? '',
+    });
   }
 
   Future<void> createProgramme(Map<String, dynamic> payload) async {
-    await _client.post('/api/programmes', body: payload);
+    await Future.delayed(const Duration(milliseconds: 300));
+    _demoProgrammes.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'department_id': payload['department_id']?.toString() ?? '',
+      'code': payload['code']?.toString() ?? '',
+      'name': payload['name']?.toString() ?? '',
+      'level_type': payload['level_type']?.toString() ?? '',
+    });
   }
 
   Future<void> createCourse(Map<String, dynamic> payload) async {
-    await _client.post('/api/courses', body: payload);
+    await Future.delayed(const Duration(milliseconds: 300));
+    _demoCourses.add({
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'department_id': payload['department_id']?.toString() ?? '',
+      'programme_id': payload['programme_id']?.toString() ?? '',
+      'code': payload['code']?.toString() ?? '',
+      'title': payload['title']?.toString() ?? '',
+      'unit': payload['unit']?.toString() ?? '',
+      'semester': payload['semester']?.toString() ?? '',
+      'level': payload['level']?.toString() ?? '',
+      'is_active': true,
+    });
   }
 
   Future<void> assignLecturer({
     required String courseId,
     required String lecturerId,
   }) async {
-    await _client.post(
-      '/api/courses/$courseId/lecturers',
-      body: {'lecturer_id': int.tryParse(lecturerId) ?? lecturerId},
-    );
+    await Future.delayed(const Duration(milliseconds: 300));
   }
 
-  List<Map<String, dynamic>> _list(dynamic data) {
-    dynamic rows = data;
-    if (data is Map) rows = data['items'] ?? data['data'] ?? data['results'];
-    if (rows is! List) return const [];
-    return rows
-        .whereType<Map>()
-        .map((raw) => raw.map((key, value) => MapEntry(key.toString(), value)))
-        .toList();
-  }
-
-  void close() => _client.close();
+  void close() {}
 }
 
 class AcademicSetupData {

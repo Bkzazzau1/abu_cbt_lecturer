@@ -600,8 +600,10 @@ class _ExamPaperHeader extends StatelessWidget {
       ),
       child: Column(
         children: [
+          Image.asset('assets/abulogo.png', height: 56),
+          const SizedBox(height: 8),
           Text(
-            'KADUNA STATE UNIVERSITY',
+            'AHMADU BELLO UNIVERSITY, ZARIA',
             textAlign: TextAlign.center,
             style: Theme.of(
               context,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../lecturer_marking/data/lecturer_marking_api.dart';
+
 class LecturerAssignmentsMarkingPanel extends StatefulWidget {
   const LecturerAssignmentsMarkingPanel({
     super.key,
@@ -1263,8 +1265,10 @@ class _AssignmentSubmissionFilePage extends StatelessWidget {
             Center(
               child: Column(
                 children: [
+                  Image.asset('assets/abulogo.png', height: 56),
+                  const SizedBox(height: 8),
                   Text(
-                    'KADUNA STATE UNIVERSITY',
+                    'AHMADU BELLO UNIVERSITY, ZARIA',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w900,
@@ -1347,6 +1351,7 @@ class _ExamScriptMarkingWorkspaceState
   late final List<_ExamQuestionMark> _caMarks;
   late final List<_ExamQuestionMark> _questionMarks;
   late final TextEditingController _examinerSummaryController;
+  final LecturerMarkingApi _markingApi = LecturerMarkingApi();
   bool _submittedToExamOfficer = false;
   final List<_ScriptAnnotation> _annotations = const [
     _ScriptAnnotation(
@@ -1392,6 +1397,7 @@ class _ExamScriptMarkingWorkspaceState
   void dispose() {
     _noteController.dispose();
     _examinerSummaryController.dispose();
+    _markingApi.close();
     for (final mark in [..._assignmentMarks, ..._caMarks, ..._questionMarks]) {
       mark.controller
         ..removeListener(_refreshTotal)
@@ -1421,7 +1427,7 @@ class _ExamScriptMarkingWorkspaceState
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Kaduna State University examination transcript',
+                  'Ahmadu Bello University, Zaria examination transcript',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -1494,6 +1500,7 @@ class _ExamScriptMarkingWorkspaceState
             summaryController: _examinerSummaryController,
             submittedToExamOfficer: _submittedToExamOfficer,
             onSubmitToExamOfficer: _submitToExamOfficer,
+            markingApi: _markingApi,
           ),
         ],
       ),
@@ -1900,8 +1907,10 @@ class _ExamTranscriptPage extends StatelessWidget {
             Center(
               child: Column(
                 children: [
+                  Image.asset('assets/abulogo.png', height: 56),
+                  const SizedBox(height: 8),
                   Text(
-                    'KADUNA STATE UNIVERSITY',
+                    'AHMADU BELLO UNIVERSITY, ZARIA',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w900,
@@ -2223,6 +2232,7 @@ class _ExamScoreSummary extends StatelessWidget {
     required this.summaryController,
     required this.submittedToExamOfficer,
     required this.onSubmitToExamOfficer,
+    required this.markingApi,
   });
 
   final _ExamMarkingSample item;
@@ -2238,6 +2248,7 @@ class _ExamScoreSummary extends StatelessWidget {
   final TextEditingController summaryController;
   final bool submittedToExamOfficer;
   final VoidCallback onSubmitToExamOfficer;
+  final LecturerMarkingApi markingApi;
 
   @override
   Widget build(BuildContext context) {
@@ -2278,6 +2289,8 @@ class _ExamScoreSummary extends StatelessWidget {
         _MarkEntryGroup(
           title: 'Examination question marks',
           marks: questionMarks,
+          markingGuide: item.markingGuide,
+          markingApi: markingApi,
         ),
         const SizedBox(height: 12),
         Container(
@@ -2367,10 +2380,20 @@ class _ExamScoreSummary extends StatelessWidget {
 }
 
 class _MarkEntryGroup extends StatelessWidget {
-  const _MarkEntryGroup({required this.title, required this.marks});
+  const _MarkEntryGroup({
+    required this.title,
+    required this.marks,
+    this.markingGuide,
+    this.markingApi,
+  });
 
   final String title;
   final List<_ExamQuestionMark> marks;
+
+  /// When set (alongside [markingApi]), each editable mark in this group
+  /// gets an "AI: Suggest a score" affordance.
+  final String? markingGuide;
+  final LecturerMarkingApi? markingApi;
 
   @override
   Widget build(BuildContext context) {
@@ -2387,7 +2410,14 @@ class _MarkEntryGroup extends StatelessWidget {
         Wrap(
           spacing: 10,
           runSpacing: 10,
-          children: [for (final mark in marks) _MarkEntryField(mark: mark)],
+          children: [
+            for (final mark in marks)
+              _MarkEntryField(
+                mark: mark,
+                markingGuide: markingGuide,
+                markingApi: markingApi,
+              ),
+          ],
         ),
       ],
     );
@@ -2395,12 +2425,21 @@ class _MarkEntryGroup extends StatelessWidget {
 }
 
 class _MarkEntryField extends StatelessWidget {
-  const _MarkEntryField({required this.mark});
+  const _MarkEntryField({
+    required this.mark,
+    this.markingGuide,
+    this.markingApi,
+  });
 
   final _ExamQuestionMark mark;
+  final String? markingGuide;
+  final LecturerMarkingApi? markingApi;
 
   @override
   Widget build(BuildContext context) {
+    final offerAiSuggestion =
+        !mark.readOnly && markingApi != null && markingGuide != null;
+
     return SizedBox(
       width: 260,
       child: TextFormField(
@@ -2414,6 +2453,22 @@ class _MarkEntryField extends StatelessWidget {
             mark.readOnly ? Icons.verified_outlined : Icons.edit_note_outlined,
           ),
           suffixText: '/ ${mark.maxMark}',
+          suffixIcon: offerAiSuggestion
+              ? IconButton(
+                  tooltip: 'AI: Suggest a score',
+                  icon: const Icon(Icons.auto_awesome_outlined),
+                  onPressed: () => showDialog<void>(
+                    context: context,
+                    builder: (_) => _AiSuggestMarkDialog(
+                      api: markingApi!,
+                      question: mark.question,
+                      markingGuide: markingGuide!,
+                      maxMark: mark.maxMark,
+                      onAccept: (score) => mark.controller.text = '$score',
+                    ),
+                  ),
+                )
+              : null,
         ),
       ),
     );
@@ -2714,4 +2769,208 @@ class _ExamMarkingSample {
   final String markingGuide;
   final String status;
   final String note;
+}
+
+/// Dialog for the per-question "AI: Suggest a score" affordance. The
+/// lecturer supplies the candidate's answer (there's no digitised answer
+/// text elsewhere in this app — scripts are scanned/annotated images), the
+/// AI proposes a score and rationale against the marking guide, and the
+/// lecturer explicitly accepts it into the mark field or dismisses it.
+/// Nothing is written to the score unless "Use this score" is pressed.
+class _AiSuggestMarkDialog extends StatefulWidget {
+  const _AiSuggestMarkDialog({
+    required this.api,
+    required this.question,
+    required this.markingGuide,
+    required this.maxMark,
+    required this.onAccept,
+  });
+
+  final LecturerMarkingApi api;
+  final String question;
+  final String markingGuide;
+  final int maxMark;
+  final ValueChanged<int> onAccept;
+
+  @override
+  State<_AiSuggestMarkDialog> createState() => _AiSuggestMarkDialogState();
+}
+
+class _AiSuggestMarkDialogState extends State<_AiSuggestMarkDialog> {
+  final _answerController = TextEditingController();
+  bool _loading = false;
+  String? _error;
+  AiMarkingSuggestion? _suggestion;
+
+  @override
+  void dispose() {
+    _answerController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _suggest() async {
+    final answer = _answerController.text.trim();
+    if (answer.isEmpty) {
+      setState(
+        () => _error = 'Enter (or paste) the candidate\'s answer first.',
+      );
+      return;
+    }
+    setState(() {
+      _loading = true;
+      _error = null;
+      _suggestion = null;
+    });
+    final result = await widget.api.suggestMarking(
+      question: widget.question,
+      markingGuide: widget.markingGuide,
+      candidateAnswer: answer,
+      maxMark: widget.maxMark,
+    );
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      if (result.available) {
+        _suggestion = result.suggestion;
+      } else {
+        _error = result.message;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return AlertDialog(
+      title: const Row(
+        children: [
+          Icon(Icons.auto_awesome_outlined),
+          SizedBox(width: 10),
+          Text('AI: Suggest a score'),
+        ],
+      ),
+      content: SizedBox(
+        width: 480,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                widget.question,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Marking guide: ${widget.markingGuide}',
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(Icons.info_outline, size: 14, color: scheme.outline),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Demo mode: the suggestion is computed locally from keyword overlap, not a live AI model.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: scheme.outline,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _answerController,
+                minLines: 4,
+                maxLines: 8,
+                decoration: const InputDecoration(
+                  labelText: 'Candidate\'s answer',
+                  hintText: 'Paste or summarise what the candidate wrote',
+                ),
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: _loading ? null : _suggest,
+                icon: _loading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.auto_awesome_outlined),
+                label: Text(_loading ? 'Thinking...' : 'Get AI suggestion'),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: scheme.errorContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    _error!,
+                    style: TextStyle(color: scheme.onErrorContainer),
+                  ),
+                ),
+              ],
+              if (_suggestion != null) ...[
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: scheme.primaryContainer.withValues(alpha: 0.24),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: scheme.primary.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Suggested: ${_suggestion!.suggestedMark} / ${widget.maxMark}',
+                        style: const TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                      if (_suggestion!.rationale.trim().isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(_suggestion!.rationale),
+                      ],
+                      const SizedBox(height: 4),
+                      Text(
+                        'Review against the marking guide before accepting — this is a suggestion, not a final grade.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+        FilledButton(
+          onPressed: _suggestion == null
+              ? null
+              : () {
+                  widget.onAccept(_suggestion!.suggestedMark);
+                  Navigator.pop(context);
+                },
+          child: const Text('Use this score'),
+        ),
+      ],
+    );
+  }
 }
