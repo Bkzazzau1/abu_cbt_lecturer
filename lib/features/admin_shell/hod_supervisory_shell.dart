@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/auth/auth_session.dart';
+import '../exam_officer/data/chief_exam_audit_bridge.dart';
 import 'workspaces/exam_analytics_panel.dart';
 import 'workspaces/exam_management_panel.dart';
 import 'workspaces/hod_academic_resources_panel.dart';
@@ -18,6 +19,7 @@ class HodSupervisoryShell extends StatefulWidget {
 }
 
 class _HodSupervisoryShellState extends State<HodSupervisoryShell> {
+  final ChiefExamAuditBridge _auditBridge = ChiefExamAuditBridge.instance;
   int _selectedIndex = 0;
 
   static const _pages = [
@@ -30,6 +32,18 @@ class _HodSupervisoryShellState extends State<HodSupervisoryShell> {
     _HodPage('Results', Icons.workspace_premium_outlined),
     _HodPage('Department Analytics', Icons.analytics_outlined),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _auditBridge.enterHodWorkspace();
+  }
+
+  @override
+  void dispose() {
+    _auditBridge.leaveHodWorkspace();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
