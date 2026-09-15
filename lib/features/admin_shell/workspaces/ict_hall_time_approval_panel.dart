@@ -55,7 +55,7 @@ class _IctHallTimeApprovalPanelState extends State<IctHallTimeApprovalPanel> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'ICT only confirms whether the requested hall is available at the requested date and time. Academic details, examination questions, moderators, markers, invigilators and results are intentionally not shown here.',
+                      'ICT only confirms whether a requested hall is available at the requested date and time for an Examination or CA. Academic details, questions, moderators, markers, invigilators and results are intentionally not shown here.',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -101,7 +101,7 @@ class _IctHallTimeApprovalPanelState extends State<IctHallTimeApprovalPanel> {
                                 : Icons.cancel_outlined,
                           ),
                           title: Text(
-                            '${request.hallName} • ${request.dateLabel} • ${request.timeLabel}',
+                            '${request.requestType.label} • ${request.hallName} • ${request.dateLabel} • ${request.timeLabel}',
                             style: const TextStyle(fontWeight: FontWeight.w800),
                           ),
                           subtitle: Text(
@@ -147,8 +147,17 @@ class _IctHallTimeApprovalPanelState extends State<IctHallTimeApprovalPanel> {
                 request.hallName,
                 style: const TextStyle(fontWeight: FontWeight.w900),
               ),
-              Chip(
-                label: Text(conflict ? 'Conflict Detected' : 'Check Availability'),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  Chip(label: Text(request.requestType.label)),
+                  Chip(
+                    label: Text(
+                      conflict ? 'Conflict Detected' : 'Check Availability',
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
