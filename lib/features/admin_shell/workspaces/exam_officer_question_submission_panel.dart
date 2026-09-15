@@ -49,7 +49,7 @@ class _ExamOfficerQuestionSubmissionPanelState
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Receive lecturer question papers, read them in full, send them to a moderator, or return them to the lecturer with a correction note.',
+                  'Receive lecturer question papers, see the registered candidate load for each course, read the full paper, send it to moderation, or return it to the lecturer with a correction note.',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -95,6 +95,8 @@ class _ExamOfficerQuestionSubmissionPanelState
   Widget _paperCard(BuildContext context, ExamOfficerQuestionPaper paper) {
     final scheme = Theme.of(context).colorScheme;
     final lastNote = paper.notes.isEmpty ? null : paper.notes.last;
+    final registration = _state.registrationForCourse(paper.courseCode);
+    final candidateCount = _state.candidateCountForCourse(paper.courseCode);
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12),
@@ -140,6 +142,9 @@ class _ExamOfficerQuestionSubmissionPanelState
               _pill('${paper.questionCount} questions'),
               _pill('${paper.totalMarks} marks'),
               _pill('${paper.durationMinutes} minutes'),
+              _pill('$candidateCount candidates'),
+              if (registration != null && registration.carryoverCount > 0)
+                _pill('${registration.carryoverCount} carryover'),
             ],
           ),
           if (lastNote != null) ...[
@@ -267,6 +272,7 @@ class _ExamOfficerQuestionSubmissionPanelState
                     _pill(paper.lecturerName),
                     _pill('${paper.totalMarks} marks'),
                     _pill('${paper.durationMinutes} minutes'),
+                    _pill('${_state.candidateCountForCourse(paper.courseCode)} candidates'),
                   ],
                 ),
                 const SizedBox(height: 16),
