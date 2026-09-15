@@ -107,8 +107,8 @@ class ExamAnalyticsCourseSnapshot {
   }
 
   String get riskLabel {
-    if (riskScore >= 55) return 'High attention';
-    if (riskScore >= 32) return 'Watch';
+    if (riskScore >= 30) return 'High attention';
+    if (riskScore >= 8) return 'Watch';
     return 'Stable';
   }
 
@@ -192,7 +192,7 @@ class ExamAnalyticsState extends ChangeNotifier {
   }
 
   List<ExamAnalyticsCourseSnapshot> get weakCourses {
-    final items = courses.where((item) => item.riskScore >= 32).toList();
+    final items = courses.where((item) => item.riskScore >= 8).toList();
     items.sort((a, b) => b.riskScore.compareTo(a.riskScore));
     return items;
   }
@@ -386,7 +386,7 @@ class ExamAnalyticsState extends ChangeNotifier {
       registeredCandidates: registrations,
       averageScore: average,
       passRate: passRate,
-      weakCourses: items.where((item) => item.riskScore >= 32).length,
+      weakCourses: items.where((item) => item.riskScore >= 8).length,
     );
   }
 
@@ -449,7 +449,5 @@ class ExamAnalyticsState extends ChangeNotifier {
 
   void _handleSourceChanged() => notifyListeners();
 }
-
-enum _UnusedAnalyticsMarker { value }
 
 String _normalise(String value) => value.replaceAll(' ', '').toUpperCase();
