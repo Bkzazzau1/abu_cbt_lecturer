@@ -1,6 +1,7 @@
 export 'lecturer_question_api_legacy.dart' hide LecturerQuestionApi;
 
 import '../../../core/auth/auth_session.dart';
+import '../../exam_officer/data/exam_officer_workflow_state.dart';
 import '../../lecturer_workflow/data/lecturer_course_collaboration_state.dart';
 import '../../lecturer_workflow/data/lecturer_course_materials_state.dart';
 import '../../lecturer_workflow/data/lecturer_demo_state.dart';
@@ -85,6 +86,19 @@ class LecturerQuestionApi extends legacy.LecturerQuestionApi {
       title: item.title,
       questionCount: item.questionCount,
       totalMarks: item.totalMarks,
+    );
+
+    ExamOfficerWorkflowState.instance.registerQuestionSubmission(
+      paperId: item.id,
+      courseCode: item.courseCode,
+      courseTitle: item.courseTitle,
+      title: item.title,
+      lecturerName:
+          AuthSession.instance.session?.name ?? 'Course Lecturer',
+      questionCount: item.questionCount,
+      totalMarks: item.totalMarks,
+      durationMinutes: durationMinutes,
+      questionPayload: questionPayload,
     );
 
     LecturerCourseCollaborationState.instance.registerExamSubmission(
