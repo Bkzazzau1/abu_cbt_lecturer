@@ -1,5 +1,8 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/auth/auth_session.dart';
+import 'lecturer_course_collaboration_state.dart';
+
 enum CbtSlotRequestStatus { pending, approved, rejected }
 
 enum CaAssessmentStatus { scheduled, slotPending, slotRejected }
@@ -204,6 +207,8 @@ class CbtCalendarState extends ChangeNotifier {
   List<CbtSlotRequest> get requests => List.unmodifiable(_requests);
   List<CaAssessmentRecord> get assessments => List.unmodifiable(_assessments);
 
+  String get _actor => AuthSession.instance.session?.name ?? 'Course Lecturer';
+
   void setSlotAvailability(String slotId, bool available) {
     final slot = _slot(slotId);
     if (slot.isBooked) return;
@@ -266,6 +271,16 @@ class CbtCalendarState extends ChangeNotifier {
     slot.bookedAssessmentId = assessment.id;
     slot.bookedCourseCode = courseCode;
     slot.bookedCaLabel = caLabel;
+    LecturerCourseCollaborationState.instance.registerCaWork(
+      courseCode: courseCode,
+      title: title,
+      caLabel: caLabel,
+      questionCount: assessment.questionCount,
+      totalMarks: assessment.totalMarks,
+      actor: _actor,
+      status: 'Scheduled',
+      locked: true,
+    );
     notifyListeners();
     return assessment;
   }
@@ -310,6 +325,16 @@ class CbtCalendarState extends ChangeNotifier {
     assessment.requestId = request.id;
     _assessments.insert(0, assessment);
     _requests.insert(0, request);
+    LecturerCourseCollaborationState.instance.registerCaWork(
+      courseCode: courseCode,
+      title: title,
+      caLabel: caLabel,
+      questionCount: assessment.questionCount,
+      totalMarks: assessment.totalMarks,
+      actor: lecturerName,
+      status: 'Slot Request Pending',
+      locked: false,
+    );
     notifyListeners();
     return request;
   }
@@ -335,6 +360,16 @@ class CbtCalendarState extends ChangeNotifier {
     request.responseNote = 'CBT slot approved by ICT Admin.';
     assessment.status = CaAssessmentStatus.scheduled;
     assessment.slotId = slot.id;
+    LecturerCourseCollaborationState.instance.registerCaWork(
+      courseCode: assessment.courseCode,
+      title: assessment.title,
+      caLabel: assessment.caLabel,
+      questionCount: assessment.questionCount,
+      totalMarks: assessment.totalMarks,
+      actor: 'ICT Admin',
+      status: 'Scheduled',
+      locked: true,
+    );
     notifyListeners();
   }
 
@@ -345,7 +380,18 @@ class CbtCalendarState extends ChangeNotifier {
     request.responseNote = note.trim().isEmpty
         ? 'CBT slot request rejected by ICT Admin.'
         : note.trim();
-    _assessment(request.assessmentId).status = CaAssessmentStatus.slotRejected;
+    final assessment = _assessment(request.assessmentId);
+    assessment.status = CaAssessmentStatus.slotRejected;
+    LecturerCourseCollaborationState.instance.registerCaWork(
+      courseCode: assessment.courseCode,
+      title: assessment.title,
+      caLabel: assessment.caLabel,
+      questionCount: assessment.questionCount,
+      totalMarks: assessment.totalMarks,
+      actor: 'ICT Admin',
+      status: 'Slot Request Rejected',
+      locked: false,
+    );
     notifyListeners();
   }
 
