@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/auth/auth_session.dart';
 import '../../models/admin_role.dart';
 import 'admin_operations_shell.dart';
+import 'hod_supervisory_shell.dart';
 import 'ict_availability_shell.dart';
 import 'role_analytics_entry_shell.dart';
 
@@ -50,7 +51,11 @@ class RoleLockedAdminShell extends StatelessWidget {
       return const IctAvailabilityShell();
     }
 
-    if (role == AdminRole.examOfficer || role == AdminRole.hod) {
+    if (role == AdminRole.hod) {
+      return const HodSupervisoryShell();
+    }
+
+    if (role == AdminRole.examOfficer) {
       return RoleAnalyticsEntryShell(role: role);
     }
 
