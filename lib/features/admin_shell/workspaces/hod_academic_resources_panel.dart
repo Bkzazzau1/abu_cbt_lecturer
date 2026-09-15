@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../exam_officer/data/exam_officer_academic_registry.dart';
+import '../../staff_management/data/department_staff_appointments_state.dart';
 
 class HodAcademicResourcesPanel extends StatefulWidget {
   const HodAcademicResourcesPanel({super.key});
@@ -11,9 +12,11 @@ class HodAcademicResourcesPanel extends StatefulWidget {
 }
 
 class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
-  final ExamOfficerAcademicRegistry _registry =
-      ExamOfficerAcademicRegistry.instance;
-  String _section = 'Staff';
+  final ExamOfficerAcademicRegistry _registry = ExamOfficerAcademicRegistry.instance;
+  final DepartmentStaffAppointmentsState _appointments =
+      DepartmentStaffAppointmentsState.instance;
+
+  String _section = 'Courses';
   String _level = 'All Levels';
 
   @override
@@ -25,82 +28,87 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
         ? _registry.students
         : _registry.studentsForLevel(_level);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _header(context),
-        const SizedBox(height: 14),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(
-                      value: 'Staff',
-                      icon: Icon(Icons.school_outlined),
-                      label: Text('Academic Staff'),
-                    ),
-                    ButtonSegment(
-                      value: 'Courses',
-                      icon: Icon(Icons.menu_book_outlined),
-                      label: Text('Courses'),
-                    ),
-                    ButtonSegment(
-                      value: 'Students',
-                      icon: Icon(Icons.groups_2_outlined),
-                      label: Text('Students'),
-                    ),
-                  ],
-                  selected: {_section},
-                  onSelectionChanged: (value) {
-                    setState(() => _section = value.first);
-                  },
-                ),
-                SizedBox(
-                  width: 210,
-                  child: DropdownButtonFormField<String>(
-                    value: _level,
-                    decoration: const InputDecoration(
-                      labelText: 'Level filter',
-                      prefixIcon: Icon(Icons.layers_outlined),
-                      border: OutlineInputBorder(),
-                    ),
-                    items: [
-                      const DropdownMenuItem(
-                        value: 'All Levels',
-                        child: Text('All Levels'),
+    return AnimatedBuilder(
+      animation: _appointments,
+      builder: (context, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _header(context),
+          const SizedBox(height: 14),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(
+                        value: 'Courses',
+                        icon: Icon(Icons.menu_book_outlined),
+                        label: Text('Courses'),
                       ),
-                      for (final level in ExamOfficerAcademicRegistry.levels)
-                        DropdownMenuItem(value: level, child: Text(level)),
+                      ButtonSegment(
+                        value: 'Teaching Load',
+                        icon: Icon(Icons.school_outlined),
+                        label: Text('Teaching Load'),
+                      ),
+                      ButtonSegment(
+                        value: 'Students',
+                        icon: Icon(Icons.groups_2_outlined),
+                        label: Text('Students'),
+                      ),
                     ],
-                    onChanged: (value) {
-                      if (value != null) setState(() => _level = value);
-                    },
+                    selected: {_section},
+                    onSelectionChanged: (value) =>
+                        setState(() => _section = value.first),
                   ),
-                ),
-              ],
+                  SizedBox(
+                    width: 210,
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _level,
+                      decoration: const InputDecoration(
+                        labelText: 'Level filter',
+                        prefixIcon: Icon(Icons.layers_outlined),
+                        border: OutlineInputBorder(),
+                      ),
+                      items: [
+                        const DropdownMenuItem(
+                          value: 'All Levels',
+                          child: Text('All Levels'),
+                        ),
+                        for (final level in ExamOfficerAcademicRegistry.levels)
+                          DropdownMenuItem(value: level, child: Text(level)),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) setState(() => _level = value);
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 14),
-        if (_section == 'Staff') _staffSection(context, courses),
-        if (_section == 'Courses') _courseSection(context, courses),
-        if (_section == 'Students') _studentSection(context, students),
-      ],
+          const SizedBox(height: 14),
+          if (_section == 'Courses') _coursesPanel(context, courses),
+          if (_section == 'Teaching Load') _teachingLoadPanel(context, courses),
+          if (_section == 'Students') _studentsPanel(context, students),
+        ],
+      ),
     );
   }
 
   Widget _header(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final uniqueStaff = _registry.courses
-        .expand((course) => course.lecturers)
-        .toSet()
-        .length;
+    final lecturers = <String>{};
+    final moderators = <String>{};
+    for (final course in _registry.courses) {
+      lecturers.addAll(_appointments.lecturersFor(course.courseCode));
+      moderators.addAll(_appointments.moderatorsFor(course.courseCode));
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -116,7 +124,7 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Academic Resources & Department Register',
+                    'Department Academic Register',
                     style: Theme.of(context)
                         .textTheme
                         .headlineSmall
@@ -124,7 +132,7 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'HoD supervisory view of staff teaching allocations, registered courses, student cohorts and carryover pressure. Exam marking and invigilation assignments remain under the Exam Officer workflow.',
+                    'Live register of courses, HoD lecturer/moderator appointments, cohort population and carryover pressure. Teaching appointment is independent of marking and invigilation duty.',
                     style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                 ],
@@ -134,8 +142,9 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                Chip(label: Text('$uniqueStaff academic staff')),
                 Chip(label: Text('${_registry.courses.length} courses')),
+                Chip(label: Text('${lecturers.length} lecturers allocated')),
+                Chip(label: Text('${moderators.length} moderators allocated')),
                 Chip(label: Text('${_registry.totalLevelStudents} students')),
               ],
             ),
@@ -145,54 +154,33 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
     );
   }
 
-  Widget _staffSection(
+  Widget _coursesPanel(
     BuildContext context,
     List<ExamOfficerCourseRegistration> courses,
   ) {
-    final staffCourses = <String, List<ExamOfficerCourseRegistration>>{};
-    for (final course in courses) {
-      for (final lecturer in course.lecturers) {
-        staffCourses.putIfAbsent(lecturer, () => []).add(course);
-      }
-    }
-    final names = staffCourses.keys.toList()..sort();
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _SectionTitle(
-              icon: Icons.school_outlined,
-              title: 'Teaching allocation overview',
-              subtitle:
-                  'Course ownership and teaching load only. This is separate from examination marking and invigilation duty.',
+            const Text(
+              'Course Register & Academic Appointments',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
             ),
-            const SizedBox(height: 14),
-            if (names.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(20),
-                child: Center(child: Text('No staff allocation in this filter.')),
-              )
-            else
-              for (final name in names)
-                _staffCard(context, name, staffCourses[name]!),
+            const SizedBox(height: 12),
+            for (final course in courses) _courseRow(context, course),
           ],
         ),
       ),
     );
   }
 
-  Widget _staffCard(
-    BuildContext context,
-    String name,
-    List<ExamOfficerCourseRegistration> courses,
-  ) {
+  Widget _courseRow(BuildContext context, ExamOfficerCourseRegistration course) {
     final scheme = Theme.of(context).colorScheme;
-    final candidateLoad = courses.fold<int>(
-      0,
-      (sum, course) => sum + course.totalRegistered,
-    );
+    final lecturers = _appointments.lecturersFor(course.courseCode);
+    final moderators = _appointments.moderatorsFor(course.courseCode);
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 10),
@@ -201,102 +189,105 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
         border: Border.all(color: scheme.outlineVariant),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Wrap(
-        spacing: 14,
-        runSpacing: 10,
-        alignment: WrapAlignment.spaceBetween,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 650),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.w900)),
-                const SizedBox(height: 5),
-                Text(
-                  courses
-                      .map((course) => '${course.courseCode} (${course.level})')
-                      .join(' • '),
-                  style: TextStyle(color: scheme.onSurfaceVariant),
-                ),
-              ],
-            ),
-          ),
           Wrap(
-            spacing: 8,
+            spacing: 12,
+            runSpacing: 8,
+            alignment: WrapAlignment.spaceBetween,
             children: [
-              Chip(label: Text('${courses.length} course${courses.length == 1 ? '' : 's'}')),
-              Chip(label: Text('$candidateLoad registrations')),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 650),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${course.courseCode} — ${course.courseTitle}',
+                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                    Text('${course.level} • ${course.semester}'),
+                  ],
+                ),
+              ),
+              Wrap(
+                spacing: 8,
+                children: [
+                  Chip(label: Text('${course.regularCount} regular')),
+                  Chip(label: Text('${course.carryoverCount} carryover')),
+                  Chip(label: Text('${course.totalRegistered} total')),
+                ],
+              ),
             ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Lecturer(s): ${lecturers.isEmpty ? 'Not assigned' : lecturers.join(', ')}',
+            style: TextStyle(color: scheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Moderator(s): ${moderators.isEmpty ? 'Not assigned' : moderators.join(', ')}',
+            style: TextStyle(color: scheme.onSurfaceVariant),
           ),
         ],
       ),
     );
   }
 
-  Widget _courseSection(
+  Widget _teachingLoadPanel(
     BuildContext context,
     List<ExamOfficerCourseRegistration> courses,
   ) {
+    final mapping = <String, List<ExamOfficerCourseRegistration>>{};
+    for (final course in courses) {
+      for (final lecturer in _appointments.lecturersFor(course.courseCode)) {
+        mapping.putIfAbsent(lecturer, () => []).add(course);
+      }
+    }
+    final names = mapping.keys.toList()..sort();
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _SectionTitle(
-              icon: Icons.menu_book_outlined,
-              title: 'Department course register',
-              subtitle:
-                  'Live prototype register used by examination readiness, analytics and student-load calculations.',
+            const Text(
+              'Lecturer Teaching Load',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
             ),
-            const SizedBox(height: 14),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('Course')),
-                  DataColumn(label: Text('Level')),
-                  DataColumn(label: Text('Semester')),
-                  DataColumn(label: Text('Lecturer(s)')),
-                  DataColumn(label: Text('Regular')),
-                  DataColumn(label: Text('Carryover')),
-                  DataColumn(label: Text('Total')),
-                ],
-                rows: [
-                  for (final course in courses)
-                    DataRow(
-                      cells: [
-                        DataCell(
-                          Text(
-                            '${course.courseCode} — ${course.courseTitle}',
-                            style: const TextStyle(fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                        DataCell(Text(course.level)),
-                        DataCell(Text(course.semester)),
-                        DataCell(Text(course.lecturers.join(', '))),
-                        DataCell(Text('${course.regularCount}')),
-                        DataCell(Text('${course.carryoverCount}')),
-                        DataCell(Text('${course.totalRegistered}')),
-                      ],
-                    ),
-                ],
-              ),
+            const SizedBox(height: 5),
+            const Text(
+              'This is course teaching responsibility only. It does not automatically make the lecturer an exam marker or invigilator.',
             ),
+            const SizedBox(height: 12),
+            if (names.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: Text('No lecturer allocation in this filter.')),
+              )
+            else
+              for (final name in names)
+                ListTile(
+                  leading: const CircleAvatar(child: Icon(Icons.person_outline)),
+                  title: Text(name, style: const TextStyle(fontWeight: FontWeight.w800)),
+                  subtitle: Text(
+                    mapping[name]!
+                        .map((course) => '${course.courseCode} (${course.level})')
+                        .join(' • '),
+                  ),
+                  trailing: Chip(label: Text('${mapping[name]!.length} course(s)')),
+                ),
           ],
         ),
       ),
     );
   }
 
-  Widget _studentSection(
-    BuildContext context,
-    List<ExamOfficerLevelStudent> students,
-  ) {
+  Widget _studentsPanel(BuildContext context, List<ExamOfficerLevelStudent> students) {
     final scheme = Theme.of(context).colorScheme;
-    final carryoverStudents = students.where((item) => item.hasCarryover).length;
+    final carryover = students.where((item) => item.hasCarryover).length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -311,7 +302,7 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
               children: [
                 SizedBox(
                   width: width,
-                  child: _InfoCard(
+                  child: _MetricCard(
                     label: 'Cohort population',
                     value: _level == 'All Levels'
                         ? '${_registry.totalLevelStudents}'
@@ -321,18 +312,18 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
                 ),
                 SizedBox(
                   width: width,
-                  child: _InfoCard(
-                    label: 'Visible student records',
+                  child: _MetricCard(
+                    label: 'Visible records',
                     value: '${students.length}',
-                    detail: 'Prototype register rows',
+                    detail: 'Prototype student rows',
                   ),
                 ),
                 SizedBox(
                   width: width,
-                  child: _InfoCard(
+                  child: _MetricCard(
                     label: 'Carryover examples',
-                    value: '$carryoverStudents',
-                    detail: 'Students with listed repeat courses',
+                    value: '$carryover',
+                    detail: 'Students with repeat courses',
                   ),
                 ),
               ],
@@ -344,19 +335,11 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _SectionTitle(
-                  icon: Icons.groups_2_outlined,
-                  title: 'Student academic register',
-                  subtitle:
-                      'Department supervision view. Detailed results and academic standing remain in the results workflow.',
-                ),
-                const SizedBox(height: 14),
                 for (final student in students)
                   Container(
                     width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 9),
+                    margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.all(13),
                     decoration: BoxDecoration(
                       border: Border.all(color: scheme.outlineVariant),
@@ -370,10 +353,8 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              student.name,
-                              style: const TextStyle(fontWeight: FontWeight.w900),
-                            ),
+                            Text(student.name,
+                                style: const TextStyle(fontWeight: FontWeight.w900)),
                             Text('${student.matricNumber} • ${student.level}'),
                           ],
                         ),
@@ -382,10 +363,7 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
                           children: [
                             Chip(label: Text('${student.registeredCourseCount} courses')),
                             if (student.hasCarryover)
-                              Chip(
-                                avatar: const Icon(Icons.replay_outlined, size: 17),
-                                label: Text(student.carryoverCourseCodes.join(', ')),
-                              ),
+                              Chip(label: Text(student.carryoverCourseCodes.join(', '))),
                           ],
                         ),
                       ],
@@ -400,48 +378,8 @@ class _HodAcademicResourcesPanelState extends State<HodAcademicResourcesPanel> {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: scheme.primary),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 3),
-              Text(subtitle, style: TextStyle(color: scheme.onSurfaceVariant)),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _InfoCard extends StatelessWidget {
-  const _InfoCard({
+class _MetricCard extends StatelessWidget {
+  const _MetricCard({
     required this.label,
     required this.value,
     required this.detail,
@@ -460,14 +398,16 @@ class _InfoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value,
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.w900)),
+            Text(
+              value,
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineMedium
+                  ?.copyWith(fontWeight: FontWeight.w900),
+            ),
             const SizedBox(height: 4),
             Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
-            const SizedBox(height: 5),
+            const SizedBox(height: 4),
             Text(detail, style: TextStyle(color: scheme.onSurfaceVariant)),
           ],
         ),
