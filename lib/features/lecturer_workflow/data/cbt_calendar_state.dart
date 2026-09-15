@@ -286,7 +286,7 @@ class CbtCalendarState extends ChangeNotifier {
             type: 'file_upload',
             prompt: 'Upload your implementation and short explanation.',
             marks: 2,
-            answer: 'Check correctness, readability and explanation.',
+            answer: 'Check correctness, completeness, readability and explanation.',
           ),
         ],
       ),
@@ -347,6 +347,7 @@ class CbtCalendarState extends ChangeNotifier {
     required int durationMinutes,
     required List<CaQuestionSnapshot> questions,
     required String slotId,
+    String? actor,
   }) {
     final slot = _slot(slotId);
     if (!slot.isAvailable) {
@@ -375,7 +376,7 @@ class CbtCalendarState extends ChangeNotifier {
       caLabel: caLabel,
       questionCount: assessment.questionCount,
       totalMarks: assessment.totalMarks,
-      actor: _actor,
+      actor: actor ?? _actor,
       status: 'Scheduled',
       locked: true,
     );

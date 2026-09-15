@@ -8,7 +8,7 @@ import 'exam_officer_invigilation_panel.dart';
 import 'exam_officer_marking_assignment_panel.dart';
 import 'exam_officer_readiness_panel.dart';
 import 'exam_officer_timetable_flow_panel.dart';
-import 'ict_cbt_calendar_panel.dart';
+import 'ict_hall_time_approval_panel.dart';
 
 class ExamManagementPanel extends StatelessWidget {
   const ExamManagementPanel({super.key});
@@ -21,14 +21,7 @@ class ExamManagementPanel extends StatelessWidget {
         : (session?.roles.isNotEmpty == true ? session!.roles.first : '');
 
     if (role == 'ict_admin') {
-      return const Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          IctCbtCalendarPanel(),
-          SizedBox(height: 16),
-          legacy.ExamManagementPanel(),
-        ],
-      );
+      return const IctHallTimeApprovalPanel();
     }
 
     if (role == 'exam_officer') {
