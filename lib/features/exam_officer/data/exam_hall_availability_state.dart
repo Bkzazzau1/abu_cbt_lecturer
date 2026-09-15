@@ -5,6 +5,8 @@ import 'exam_officer_workflow_state.dart';
 
 enum ExamHallAvailabilityStatus { pending, approved, rejected }
 
+enum HallTimeRequestType { examination, continuousAssessment }
+
 extension ExamHallAvailabilityStatusLabel on ExamHallAvailabilityStatus {
   String get label {
     switch (this) {
@@ -14,6 +16,17 @@ extension ExamHallAvailabilityStatusLabel on ExamHallAvailabilityStatus {
         return 'Available';
       case ExamHallAvailabilityStatus.rejected:
         return 'Not Available';
+    }
+  }
+}
+
+extension HallTimeRequestTypeLabel on HallTimeRequestType {
+  String get label {
+    switch (this) {
+      case HallTimeRequestType.examination:
+        return 'Examination';
+      case HallTimeRequestType.continuousAssessment:
+        return 'CA';
     }
   }
 }
@@ -30,33 +43,63 @@ class ExamHallDefinition {
   final int capacity;
 }
 
+class CaHallSchedulePlan {
+  const CaHallSchedulePlan({
+    required this.courseId,
+    required this.courseCode,
+    required this.courseTitle,
+    required this.caLabel,
+    required this.title,
+    required this.durationMinutes,
+    required this.questions,
+    required this.lecturerName,
+  });
+
+  final int courseId;
+  final String courseCode;
+  final String courseTitle;
+  final String caLabel;
+  final String title;
+  final int durationMinutes;
+  final List<CaQuestionSnapshot> questions;
+  final String lecturerName;
+}
+
 class ExamHallAvailabilityRequest {
   ExamHallAvailabilityRequest({
     required this.id,
-    required this.paperId,
+    required this.requestType,
+    required this.sourceId,
     required this.hallId,
     required this.hallName,
     required this.capacity,
     required this.date,
     required this.startTime,
     required this.endTime,
+    this.caPlan,
     this.status = ExamHallAvailabilityStatus.pending,
     this.responseNote = '',
     this.approvedSlotId,
+    this.scheduledAssessmentId,
   });
 
   final String id;
-  final String paperId;
+  final HallTimeRequestType requestType;
+  final String sourceId;
   final String hallId;
   final String hallName;
   final int capacity;
   final DateTime date;
   final String startTime;
   final String endTime;
+  final CaHallSchedulePlan? caPlan;
   ExamHallAvailabilityStatus status;
   String responseNote;
   String? approvedSlotId;
+  String? scheduledAssessmentId;
   final DateTime createdAt = DateTime.now();
+
+  String get paperId => sourceId;
 
   String get dateLabel =>
       '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
@@ -70,7 +113,8 @@ class ExamHallAvailabilityState extends ChangeNotifier {
     _requests.addAll([
       ExamHallAvailabilityRequest(
         id: 'hall-history-1',
-        paperId: 'history-only',
+        requestType: HallTimeRequestType.examination,
+        sourceId: 'history-only',
         hallId: 'hall-b',
         hallName: 'CBT Centre B',
         capacity: 180,
@@ -102,16 +146,34 @@ class ExamHallAvailabilityState extends ChangeNotifier {
   List<ExamHallAvailabilityRequest> get requests => List.unmodifiable(_requests);
 
   List<ExamHallAvailabilityRequest> requestsForPaper(String paperId) =>
-      _requests.where((item) => item.paperId == paperId).toList(growable: false);
-
-  List<ExamHallAvailabilityRequest> pendingForPaper(String paperId) =>
       _requests
           .where(
             (item) =>
-                item.paperId == paperId &&
-                item.status == ExamHallAvailabilityStatus.pending,
+                item.requestType == HallTimeRequestType.examination &&
+                item.sourceId == paperId,
           )
           .toList(growable: false);
+
+  List<ExamHallAvailabilityRequest> requestsForCaSource(String sourceId) =>
+      _requests
+          .where(
+            (item) =>
+                item.requestType == HallTimeRequestType.continuousAssessment &&
+                item.sourceId == sourceId,
+          )
+          .toList(growable: false);
+
+  List<ExamHallAvailabilityRequest> pendingForPaper(String paperId) =>
+      requestsForPaper(paperId)
+          .where((item) => item.status == ExamHallAvailabilityStatus.pending)
+          .toList(growable: false);
+
+  ExamHallAvailabilityRequest? requestById(String id) {
+    for (final request in _requests) {
+      if (request.id == id) return request;
+    }
+    return null;
+  }
 
   ExamHallAvailabilityRequest requestAvailability({
     required String paperId,
@@ -120,13 +182,94 @@ class ExamHallAvailabilityState extends ChangeNotifier {
     required String startTime,
     required String endTime,
   }) {
+    return _createRequest(
+      requestType: HallTimeRequestType.examination,
+      sourceId: paperId,
+      hallId: hallId,
+      date: date,
+      startTime: startTime,
+      endTime: endTime,
+    );
+  }
+
+  ExamHallAvailabilityRequest requestCaAvailability({
+    required int courseId,
+    required String courseCode,
+    required String courseTitle,
+    required String caLabel,
+    required String title,
+    required int durationMinutes,
+    required List<CaQuestionSnapshot> questions,
+    required String lecturerName,
+    required String hallId,
+    required DateTime date,
+    required String startTime,
+    required String endTime,
+  }) {
+    final now = DateTime.now().microsecondsSinceEpoch;
+    final plan = CaHallSchedulePlan(
+      courseId: courseId,
+      courseCode: courseCode,
+      courseTitle: courseTitle,
+      caLabel: caLabel,
+      title: title,
+      durationMinutes: durationMinutes,
+      questions: List<CaQuestionSnapshot>.unmodifiable(questions),
+      lecturerName: lecturerName,
+    );
+    return _createRequest(
+      requestType: HallTimeRequestType.continuousAssessment,
+      sourceId: 'ca-plan-$now',
+      hallId: hallId,
+      date: date,
+      startTime: startTime,
+      endTime: endTime,
+      caPlan: plan,
+    );
+  }
+
+  ExamHallAvailabilityRequest reassignCaAvailability({
+    required String rejectedRequestId,
+    required String hallId,
+    required DateTime date,
+    required String startTime,
+    required String endTime,
+  }) {
+    final previous = _request(rejectedRequestId);
+    if (previous.requestType != HallTimeRequestType.continuousAssessment ||
+        previous.caPlan == null) {
+      throw StateError('This is not a CA hall/time request.');
+    }
+    if (previous.status != ExamHallAvailabilityStatus.rejected) {
+      throw StateError('Only a rejected CA request can be reassigned.');
+    }
+    return _createRequest(
+      requestType: HallTimeRequestType.continuousAssessment,
+      sourceId: previous.sourceId,
+      hallId: hallId,
+      date: date,
+      startTime: startTime,
+      endTime: endTime,
+      caPlan: previous.caPlan,
+    );
+  }
+
+  ExamHallAvailabilityRequest _createRequest({
+    required HallTimeRequestType requestType,
+    required String sourceId,
+    required String hallId,
+    required DateTime date,
+    required String startTime,
+    required String endTime,
+    CaHallSchedulePlan? caPlan,
+  }) {
     final hall = halls.firstWhere((item) => item.id == hallId);
     if (_minutes(startTime, endTime) <= 0) {
       throw StateError('End time must be later than start time.');
     }
     final duplicate = _requests.any(
       (item) =>
-          item.paperId == paperId &&
+          item.sourceId == sourceId &&
           item.status == ExamHallAvailabilityStatus.pending &&
           item.hallId == hallId &&
           _sameDay(item.date, date) &&
@@ -139,13 +282,15 @@ class ExamHallAvailabilityState extends ChangeNotifier {
 
     final request = ExamHallAvailabilityRequest(
       id: 'hall-req-${DateTime.now().microsecondsSinceEpoch}',
-      paperId: paperId,
+      requestType: requestType,
+      sourceId: sourceId,
       hallId: hall.id,
       hallName: hall.name,
       capacity: hall.capacity,
       date: date,
       startTime: startTime,
       endTime: endTime,
+      caPlan: caPlan,
     );
     _requests.insert(0, request);
     notifyListeners();
@@ -176,38 +321,64 @@ class ExamHallAvailabilityState extends ChangeNotifier {
     }
 
     final calendar = CbtCalendarState.instance;
-    CbtCalendarSlot? slot;
+    final slot = _resolveOrCreateSlot(calendar, request);
+
+    if (request.requestType == HallTimeRequestType.examination) {
+      ExamOfficerWorkflowState.instance.scheduleExamSitting(
+        paperId: request.sourceId,
+        slotId: slot.id,
+      );
+    } else {
+      final plan = request.caPlan;
+      if (plan == null) {
+        throw StateError('CA scheduling information is unavailable.');
+      }
+      if (_minutes(request.startTime, request.endTime) < plan.durationMinutes) {
+        throw StateError('The approved time is shorter than the CA duration.');
+      }
+      final assessment = calendar.scheduleCa(
+        courseId: plan.courseId,
+        courseCode: plan.courseCode,
+        courseTitle: plan.courseTitle,
+        caLabel: plan.caLabel,
+        title: plan.title,
+        durationMinutes: plan.durationMinutes,
+        questions: plan.questions,
+        slotId: slot.id,
+        actor: plan.lecturerName,
+      );
+      request.scheduledAssessmentId = assessment.id;
+    }
+
+    request.status = ExamHallAvailabilityStatus.approved;
+    request.responseNote = 'Hall and time confirmed available by ICT.';
+    request.approvedSlotId = slot.id;
+    notifyListeners();
+  }
+
+  CbtCalendarSlot _resolveOrCreateSlot(
+    CbtCalendarState calendar,
+    ExamHallAvailabilityRequest request,
+  ) {
     for (final candidate in calendar.slots) {
       if (candidate.isAvailable &&
           candidate.venue == request.hallName &&
           _sameDay(candidate.date, request.date) &&
           candidate.startTime == request.startTime &&
           candidate.endTime == request.endTime) {
-        slot = candidate;
-        break;
+        return candidate;
       }
     }
 
-    if (slot == null) {
-      final before = calendar.slots.map((item) => item.id).toSet();
-      calendar.addSlot(
-        date: request.date,
-        startTime: request.startTime,
-        endTime: request.endTime,
-        venue: request.hallName,
-        capacity: request.capacity,
-      );
-      slot = calendar.slots.firstWhere((item) => !before.contains(item.id));
-    }
-
-    ExamOfficerWorkflowState.instance.scheduleExamSitting(
-      paperId: request.paperId,
-      slotId: slot.id,
+    final before = calendar.slots.map((item) => item.id).toSet();
+    calendar.addSlot(
+      date: request.date,
+      startTime: request.startTime,
+      endTime: request.endTime,
+      venue: request.hallName,
+      capacity: request.capacity,
     );
-    request.status = ExamHallAvailabilityStatus.approved;
-    request.responseNote = 'Hall and time confirmed available by ICT.';
-    request.approvedSlotId = slot.id;
-    notifyListeners();
+    return calendar.slots.firstWhere((item) => !before.contains(item.id));
   }
 
   void reject(String requestId, {String note = ''}) {
