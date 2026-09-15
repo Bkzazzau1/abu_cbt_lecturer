@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../exam_officer/data/exam_hall_availability_state.dart';
 import '../../exam_officer/data/exam_officer_workflow_state.dart';
-import '../../lecturer_workflow/data/cbt_calendar_state.dart';
 
 class ExamOfficerTimetableFlowPanel extends StatefulWidget {
   const ExamOfficerTimetableFlowPanel({super.key});
@@ -14,14 +14,15 @@ class ExamOfficerTimetableFlowPanel extends StatefulWidget {
 class _ExamOfficerTimetableFlowPanelState
     extends State<ExamOfficerTimetableFlowPanel> {
   final ExamOfficerWorkflowState _state = ExamOfficerWorkflowState.instance;
-  final CbtCalendarState _calendar = CbtCalendarState.instance;
+  final ExamHallAvailabilityState _hallState =
+      ExamHallAvailabilityState.instance;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _state,
       builder: (context, _) => AnimatedBuilder(
-        animation: _calendar,
+        animation: _hallState,
         builder: (context, _) {
           final schedulable = _state.questionPapers
               .where(
@@ -33,6 +34,11 @@ class _ExamOfficerTimetableFlowPanelState
                         ExamOfficerQuestionStatus.partiallyScheduled,
               )
               .toList();
+          final pending = _hallState.requests
+              .where(
+                (item) => item.status == ExamHallAvailabilityStatus.pending,
+              )
+              .length;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -52,23 +58,19 @@ class _ExamOfficerTimetableFlowPanelState
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Moderation → Slot → Timetable',
+                              'Moderation → Hall/Time Request → Timetable',
                               style: Theme.of(context)
                                   .textTheme
                                   .titleLarge
                                   ?.copyWith(fontWeight: FontWeight.w900),
                             ),
                           ),
-                          Chip(
-                            label: Text(
-                              '${_calendar.availableSlots.length} slots available',
-                            ),
-                          ),
+                          Chip(label: Text('$pending awaiting ICT')),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Only moderated examination papers can be scheduled. The Exam Officer selects an available slot and the booked sitting is published automatically in the exam timetable.',
+                        'After moderation, the Exam Officer proposes the examination hall, date and time. ICT only confirms whether that hall and time are available. The sitting enters the published timetable automatically after ICT approval.',
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -76,7 +78,7 @@ class _ExamOfficerTimetableFlowPanelState
                       const SizedBox(height: 14),
                       if (schedulable.isEmpty)
                         const Text(
-                          'No moderated examination paper is waiting for a slot.',
+                          'No moderated examination paper is waiting for hall/time approval.',
                         )
                       else
                         for (final paper in schedulable)
@@ -101,6 +103,10 @@ class _ExamOfficerTimetableFlowPanelState
     final candidates = _state.candidateCountForCourse(paper.courseCode);
     final remaining = _state.remainingCandidates(paper);
     final sittings = _state.schedulesForPaper(paper.paperId);
+    final requests = _hallState.requestsForPaper(paper.id);
+    final pending = requests
+        .where((item) => item.status == ExamHallAvailabilityStatus.pending)
+        .toList();
 
     return Container(
       width: double.infinity,
@@ -137,17 +143,34 @@ class _ExamOfficerTimetableFlowPanelState
               Chip(label: Text('${paper.durationMinutes} minutes')),
               Chip(label: Text('$remaining awaiting capacity')),
               if (sittings.isNotEmpty)
-                Chip(label: Text('${sittings.length} sitting(s) booked')),
+                Chip(label: Text('${sittings.length} sitting(s) approved')),
+              if (pending.isNotEmpty)
+                Chip(label: Text('${pending.length} ICT request(s) pending')),
             ],
           ),
+          if (requests.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            for (final request in requests.take(3))
+              Padding(
+                padding: const EdgeInsets.only(bottom: 5),
+                child: Text(
+                  '${request.scheduleLabel} • ${request.status.label}${request.responseNote.isEmpty ? '' : ' • ${request.responseNote}'}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+          ],
           const SizedBox(height: 10),
           FilledButton.icon(
-            onPressed: remaining == 0 || _calendar.availableSlots.isEmpty
+            onPressed: remaining == 0 || pending.isNotEmpty
                 ? null
-                : () => _chooseSlot(paper),
-            icon: const Icon(Icons.calendar_month_outlined),
+                : () => _requestHallTime(paper),
+            icon: const Icon(Icons.meeting_room_outlined),
             label: Text(
-              sittings.isEmpty ? 'Select Available Slot' : 'Add Another Sitting',
+              sittings.isEmpty
+                  ? 'Request Hall & Time'
+                  : 'Request Another Sitting',
             ),
           ),
         ],
@@ -179,14 +202,14 @@ class _ExamOfficerTimetableFlowPanelState
             ),
             const SizedBox(height: 6),
             Text(
-              'A sitting appears here immediately after the Exam Officer books an available slot.',
+              'A sitting appears here only after ICT confirms that the requested hall and time are available.',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 12),
             if (schedules.isEmpty)
-              const Text('No exam sitting has been placed on the timetable yet.')
+              const Text('No approved exam sitting is on the timetable yet.')
             else
               for (final schedule in schedules) _timetableRow(context, schedule),
           ],
@@ -231,94 +254,168 @@ class _ExamOfficerTimetableFlowPanelState
     );
   }
 
-  Future<void> _chooseSlot(ExamOfficerQuestionPaper paper) async {
-    final available = _calendar.availableSlots
-        .where(
-          (slot) =>
-              _durationMinutes(slot.startTime, slot.endTime) >=
-              paper.durationMinutes,
-        )
-        .toList();
+  Future<void> _requestHallTime(ExamOfficerQuestionPaper paper) async {
+    var selectedHall = ExamHallAvailabilityState.halls.first.id;
+    var date = DateTime(2026, 9, 24);
+    var start = const TimeOfDay(hour: 9, minute: 0);
+    var end = TimeOfDay(
+      hour: 9 + (paper.durationMinutes ~/ 60),
+      minute: paper.durationMinutes % 60,
+    );
 
-    if (available.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No available slot can hold this exam duration.'),
-        ),
-      );
-      return;
-    }
+    String time(TimeOfDay value) =>
+        '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
 
-    String? selected;
-    final slotId = await showDialog<String>(
+    final submitted = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text('Select slot for ${paper.courseCode}'),
-          content: SizedBox(
-            width: 700,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${_state.remainingCandidates(paper)} candidates still need capacity. Only available slots long enough for the ${paper.durationMinutes}-minute exam are shown.',
-                  ),
-                  const SizedBox(height: 12),
-                  RadioGroup<String>(
-                    groupValue: selected,
-                    onChanged: (value) =>
-                        setDialogState(() => selected = value),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (final slot in available)
-                          RadioListTile<String>(
-                            value: slot.id,
-                            title: Text(slot.scheduleLabel),
-                            subtitle: Text(
-                              '${slot.capacity} seats • ${_durationMinutes(slot.startTime, slot.endTime)} minutes${slot.capacity >= _state.remainingCandidates(paper) ? ' • enough for remaining candidates' : ' • another sitting will still be needed'}',
-                            ),
+        builder: (context, setDialogState) {
+          final hall = ExamHallAvailabilityState.halls
+              .firstWhere((item) => item.id == selectedHall);
+          final requestedMinutes = _durationMinutes(time(start), time(end));
+          final validDuration = requestedMinutes >= paper.durationMinutes;
+          final dateLabel =
+              '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+          return AlertDialog(
+            title: Text('Request hall/time for ${paper.courseCode}'),
+            content: SizedBox(
+              width: 620,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Choose the proposed hall and time. ICT will only receive the operational hall/time request and will not see the examination paper or other academic details.',
+                    ),
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<String>(
+                      initialValue: selectedHall,
+                      decoration: const InputDecoration(labelText: 'Exam hall'),
+                      items: [
+                        for (final item in ExamHallAvailabilityState.halls)
+                          DropdownMenuItem(
+                            value: item.id,
+                            child: Text('${item.name} • ${item.capacity} seats'),
                           ),
                       ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setDialogState(() => selectedHall = value);
+                        }
+                      },
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.calendar_today_outlined),
+                      title: const Text('Date'),
+                      subtitle: Text(dateLabel),
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: date,
+                          firstDate: DateTime(2026, 9, 15),
+                          lastDate: DateTime(2027, 12, 31),
+                        );
+                        if (picked != null) {
+                          setDialogState(() => date = picked);
+                        }
+                      },
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.schedule_outlined),
+                      title: const Text('Start time'),
+                      subtitle: Text(time(start)),
+                      onTap: () async {
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: start,
+                        );
+                        if (picked != null) {
+                          setDialogState(() => start = picked);
+                        }
+                      },
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.schedule_outlined),
+                      title: const Text('End time'),
+                      subtitle: Text(time(end)),
+                      onTap: () async {
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: end,
+                        );
+                        if (picked != null) {
+                          setDialogState(() => end = picked);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Chip(label: Text('${hall.capacity} seats')),
+                        Chip(label: Text('${paper.durationMinutes} min required')),
+                        Chip(label: Text('$requestedMinutes min requested')),
+                      ],
+                    ),
+                    if (!validDuration) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'The requested time window is shorter than the examination duration.',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: selected == null
-                  ? null
-                  : () => Navigator.pop(context, selected),
-              child: const Text('Book & Publish'),
-            ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: validDuration
+                    ? () => Navigator.pop(context, true)
+                    : null,
+                child: const Text('Send to ICT'),
+              ),
+            ],
+          );
+        },
       ),
     );
 
-    if (slotId == null) return;
+    if (submitted != true) return;
 
     try {
       if (paper.status == ExamOfficerQuestionStatus.moderated) {
         _state.markQuestionReady(
           paper.id,
-          'Moderation completed; paper opened for exam slot scheduling.',
+          'Moderation completed; hall/time availability requested from ICT.',
         );
       }
-      _state.scheduleExamSitting(paperId: paper.id, slotId: slotId);
+      _hallState.requestAvailability(
+        paperId: paper.id,
+        hallId: selectedHall,
+        date: date,
+        startTime: time(start),
+        endTime: time(end),
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${paper.courseCode} booked successfully and added to the exam timetable.',
+            '${paper.courseCode} hall/time request sent to ICT for availability confirmation.',
           ),
         ),
       );
