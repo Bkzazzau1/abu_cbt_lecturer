@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import 'exam_officer_academic_registry.dart';
+import 'exam_officer_demo_seed.dart';
+import 'exam_officer_demo_slots.dart';
 import 'exam_officer_invigilation_state.dart';
 import 'exam_officer_workflow_state.dart';
 import 'level_result_moderation_state.dart';
@@ -66,7 +68,9 @@ class ExamAnalyticsCourseSnapshot {
 
   double get capacityCoverage => registeredCandidates == 0
       ? 0
-      : (scheduledCapacity * 100 / registeredCandidates).clamp(0, 100).toDouble();
+      : (scheduledCapacity * 100 / registeredCandidates)
+          .clamp(0, 100)
+          .toDouble();
 
   double get previousPassRate =>
       history.length < 2 ? passRate : history[history.length - 2].passRate;
@@ -99,7 +103,7 @@ class ExamAnalyticsCourseSnapshot {
     }
     if (sittingCount > 0 && invigilatorCount == 0) score += 5;
     if (sittingCount > 0 && capacityCoverage < 100) score += 5;
-    return score.clamp(0, 100);
+    return score.clamp(0, 100).toInt();
   }
 
   String get riskLabel {
@@ -151,6 +155,8 @@ class ExamAnalyticsLevelSummary {
 
 class ExamAnalyticsState extends ChangeNotifier {
   ExamAnalyticsState._() {
+    ExamOfficerDemoSlots.ensure();
+    ExamOfficerDemoSeed.ensureSeeded();
     _workflow.addListener(_handleSourceChanged);
     _levelResults.addListener(_handleSourceChanged);
     _invigilation.addListener(_handleSourceChanged);
@@ -158,7 +164,8 @@ class ExamAnalyticsState extends ChangeNotifier {
 
   static final ExamAnalyticsState instance = ExamAnalyticsState._();
 
-  final ExamOfficerAcademicRegistry _registry = ExamOfficerAcademicRegistry.instance;
+  final ExamOfficerAcademicRegistry _registry =
+      ExamOfficerAcademicRegistry.instance;
   final ExamOfficerWorkflowState _workflow = ExamOfficerWorkflowState.instance;
   final LevelResultModerationState _levelResults =
       LevelResultModerationState.instance;
@@ -266,8 +273,8 @@ class ExamAnalyticsState extends ChangeNotifier {
       scores.addAll(_fallbackScores(registration.courseCode));
     }
 
-    final average = scores.fold<int>(0, (sum, value) => sum + value) /
-        scores.length;
+    final average =
+        scores.fold<int>(0, (sum, value) => sum + value) / scores.length;
     final passed = scores.where((value) => value >= 40).length;
     final passRate = passed * 100 / scores.length;
 
@@ -399,11 +406,13 @@ class ExamAnalyticsState extends ChangeNotifier {
 
     for (var i = 0; i < historySessions.length - 1; i++) {
       final yearsBack = (historySessions.length - 1) - i;
-      final avg = (currentAverage - trendBias * yearsBack +
+      final avg = (currentAverage -
+              trendBias * yearsBack +
               courseBias * (i.isEven ? 0.8 : -0.45))
           .clamp(34, 78)
           .toDouble();
-      final pass = (currentPassRate - trendBias * yearsBack * 1.8 +
+      final pass = (currentPassRate -
+              trendBias * yearsBack * 1.8 +
               courseBias * (i.isEven ? 1.0 : -0.7))
           .clamp(35, 96)
           .toDouble();
@@ -440,5 +449,7 @@ class ExamAnalyticsState extends ChangeNotifier {
 
   void _handleSourceChanged() => notifyListeners();
 }
+
+enum _UnusedAnalyticsMarker { value }
 
 String _normalise(String value) => value.replaceAll(' ', '').toUpperCase();
