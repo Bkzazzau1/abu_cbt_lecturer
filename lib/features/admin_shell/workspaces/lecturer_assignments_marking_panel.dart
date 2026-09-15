@@ -15,6 +15,7 @@ class LecturerAssignmentsMarkingPanel extends StatefulWidget {
 
 class _LecturerAssignmentsMarkingPanelState
     extends State<LecturerAssignmentsMarkingPanel> {
+  late String _activeSection = widget.section;
   String _selectedCourse = 'CSC 305';
   String _selectedStatus = 'Pending Marking';
   _SubmissionReviewItem? _activeSubmission;
@@ -163,18 +164,67 @@ class _LecturerAssignmentsMarkingPanelState
         )
         .toList();
 
-    if (widget.section == 'Results Submission') {
-      return _LecturerResultsSubmissionPanel(
-        selectedCourse: _selectedCourse,
-        selectedStatus: _selectedStatus,
-        examSamples: filteredExamSamples,
-        onCourseChanged: (value) =>
-            setState(() => _selectedCourse = value ?? 'All'),
-        onStatusChanged: (value) =>
-            setState(() => _selectedStatus = value ?? 'All'),
+    final sectionToggle = Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: SegmentedButton<String>(
+        segments: const [
+          ButtonSegment(
+            value: 'Marking & Grading',
+            label: Text('Marking & Grading'),
+            icon: Icon(Icons.edit_note_outlined),
+          ),
+          ButtonSegment(
+            value: 'Results Submission',
+            label: Text('Results Submission'),
+            icon: Icon(Icons.publish_outlined),
+          ),
+        ],
+        selected: {_activeSection},
+        onSelectionChanged: (selection) =>
+            setState(() => _activeSection = selection.first),
+      ),
+    );
+
+    if (_activeSection == 'Results Submission') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          sectionToggle,
+          _LecturerResultsSubmissionPanel(
+            selectedCourse: _selectedCourse,
+            selectedStatus: _selectedStatus,
+            examSamples: filteredExamSamples,
+            onCourseChanged: (value) =>
+                setState(() => _selectedCourse = value ?? 'All'),
+            onStatusChanged: (value) =>
+                setState(() => _selectedStatus = value ?? 'All'),
+          ),
+        ],
       );
     }
 
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        sectionToggle,
+        _buildMarkingCard(
+          context,
+          scheme,
+          filteredAssignments,
+          filteredSubmissions,
+          filteredExamSamples,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMarkingCard(
+    BuildContext context,
+    ColorScheme scheme,
+    List<_AssignmentQueueItem> filteredAssignments,
+    List<_SubmissionReviewItem> filteredSubmissions,
+    List<_ExamMarkingSample> filteredExamSamples,
+  ) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -187,7 +237,7 @@ class _LecturerAssignmentsMarkingPanelState
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    widget.section,
+                    _activeSection,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),

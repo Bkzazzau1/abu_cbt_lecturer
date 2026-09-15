@@ -18,6 +18,7 @@ import 'workspaces/moderator_question_review_panel.dart';
 import 'workspaces/student_records_panel.dart';
 import 'workspaces/results_approval_release_panel.dart';
 import '../staff_management/widgets/staff_management_panel.dart';
+import '../lecturer_questions/widgets/lecturer_question_archive_panel.dart';
 import '../lecturer_questions/widgets/lecturer_question_live_panel.dart';
 import 'widgets/admin_metric_card.dart';
 
@@ -48,16 +49,9 @@ const _hodPages = [
 
 const _lecturerPages = [
   _OpsPage('My Courses', Icons.dashboard_outlined),
-  _OpsPage('Course Materials', Icons.upload_file_outlined),
-  _OpsPage('Video Lectures', Icons.video_library_outlined),
-  _OpsPage('Live Classes', Icons.live_tv_outlined),
-  _OpsPage('Assignments', Icons.assignment_ind_outlined),
-  _OpsPage('Quizzes & Tests', Icons.quiz_outlined),
   _OpsPage('Exam Questions', Icons.rule_folder_outlined),
-  _OpsPage('Student Engagement', Icons.groups_2_outlined),
   _OpsPage('Marking & Grading', Icons.edit_note_outlined),
-  _OpsPage('Results Submission', Icons.publish_outlined),
-  _OpsPage('Messages / Q&A', Icons.forum_outlined),
+  _OpsPage('Archive', Icons.inventory_2_outlined),
   _OpsPage('Profile', Icons.person_outline),
 ];
 
@@ -490,19 +484,14 @@ class _PrimaryPanel extends StatelessWidget {
       if (pageLabel == 'Exam Questions') {
         return const LecturerQuestionLivePanel();
       }
-      if (pageLabel == 'Course Materials' ||
-          pageLabel == 'Video Lectures' ||
-          pageLabel == 'Live Classes' ||
-          pageLabel == 'Assignments' ||
-          pageLabel == 'Quizzes & Tests' ||
-          pageLabel == 'Student Engagement' ||
-          pageLabel == 'Messages / Q&A' ||
-          pageLabel == 'Profile') {
+      if (pageLabel == 'Archive') {
+        return const LecturerQuestionArchivePanel();
+      }
+      if (pageLabel == 'Profile') {
         return LecturerCourseDeliveryFlowPanel(section: pageLabel);
       }
-      if (pageLabel == 'Marking & Grading' ||
-          pageLabel == 'Results Submission') {
-        return LecturerAssignmentsMarkingPanel(section: pageLabel);
+      if (pageLabel == 'Marking & Grading') {
+        return const LecturerAssignmentsMarkingPanel();
       }
       return _TaskPanel(tasks: tasks);
     }

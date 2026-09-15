@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../core/auth/auth_session.dart';
 import '../../../core/config/api_config.dart';
 import '../../../core/network/api_client.dart';
+import '../../../models/admin_role.dart';
+import '../data/demo_staff_accounts.dart';
 import '../data/staff_auth_api.dart';
 
 class StaffLoginScreen extends StatefulWidget {
@@ -51,6 +53,19 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
       setState(() => _error = error.message);
     } catch (error) {
       setState(() => _error = error.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loginAsDemo(DemoStaffAccount account) async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      await AuthSession.instance.saveLogin(account.toLoginPayload());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -165,6 +180,55 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
                                   _isLoading ? 'Signing in...' : 'Sign in',
                                 ),
                               ),
+                            ),
+                            const SizedBox(height: 22),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Divider(color: scheme.outlineVariant),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                  ),
+                                  child: Text(
+                                    'OR DEMO SIGN-IN',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          color: scheme.onSurfaceVariant,
+                                          letterSpacing: 1,
+                                        ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Divider(color: scheme.outlineVariant),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Explore a portal instantly with a local demo account — no backend required.',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: scheme.onSurfaceVariant),
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                for (final account in demoStaffAccounts)
+                                  OutlinedButton.icon(
+                                    onPressed: _isLoading
+                                        ? null
+                                        : () => _loginAsDemo(account),
+                                    icon: Icon(account.role.icon, size: 16),
+                                    label: Text(
+                                      'Continue as ${account.role.label}',
+                                    ),
+                                  ),
+                              ],
                             ),
                             const SizedBox(height: 14),
                             Text(

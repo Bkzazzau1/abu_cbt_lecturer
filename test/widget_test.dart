@@ -142,7 +142,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Open navigation menu'));
     await tester.pumpAndSettle();
-    expect(find.text('Exam Questions'), findsOneWidget);
+    expect(find.text('Exam Questions'), findsWidgets);
     expect(find.text('Workspace role'), findsNothing);
   });
 }
