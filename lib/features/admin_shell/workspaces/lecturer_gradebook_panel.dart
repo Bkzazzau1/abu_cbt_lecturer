@@ -568,9 +568,7 @@ class _ScoreFieldState extends State<_ScoreField> {
     if (widget.locked) return;
     final raw = _controller.text.trim();
     final parsed = raw.isEmpty ? null : int.tryParse(raw);
-    final normalized = parsed == null
-        ? null
-        : parsed.clamp(0, widget.max).toInt();
+    final normalized = parsed?.clamp(0, widget.max).toInt();
     final normalizedText = normalized?.toString() ?? '';
     if (_controller.text != normalizedText) {
       _controller.text = normalizedText;

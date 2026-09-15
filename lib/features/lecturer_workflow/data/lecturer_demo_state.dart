@@ -281,8 +281,7 @@ class LecturerDemoState extends ChangeNotifier {
     final script = _script(scriptId);
     final question =
         script.questions.firstWhere((item) => item.id == questionId);
-    script.marks[questionId] =
-        mark == null ? null : mark.clamp(0, question.maxMark).toInt();
+    script.marks[questionId] = mark?.clamp(0, question.maxMark).toInt();
     if (script.status == LecturerDemoScriptStatus.marked ||
         script.status == LecturerDemoScriptStatus.submittedToExamOfficer) {
       script.status = LecturerDemoScriptStatus.pendingMarking;

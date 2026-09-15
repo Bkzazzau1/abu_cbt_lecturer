@@ -139,7 +139,7 @@ class LecturerCaMarkingState extends ChangeNotifier {
           final canonical = question.matchPairs
               .map((pair) => '${pair.left}→${pair.right}')
               .join('; ');
-          out[i] = mostlyCorrect ? canonical : '${canonical}; incorrect match';
+          out[i] = mostlyCorrect ? canonical : '$canonical; incorrect match';
           break;
         case 'essay':
           out[i] = 'The student explains the concept and gives a relevant practical example.';
@@ -158,7 +158,7 @@ class LecturerCaMarkingState extends ChangeNotifier {
   }
 
   void applyAutoMarks(String attemptId) {
-    final attempt = attempt(attemptId);
+    final attempt = this.attempt(attemptId);
     final assessment = _assessment(attempt.assessmentId);
     if (_gradebookLocked(assessment.courseCode)) return;
     for (var i = 0; i < assessment.questions.length; i++) {
@@ -220,8 +220,7 @@ class LecturerCaMarkingState extends ChangeNotifier {
     final assessment = _assessment(attempt.assessmentId);
     if (_gradebookLocked(assessment.courseCode)) return;
     final max = assessment.questions[questionIndex].marks;
-    attempt.marks[questionIndex] =
-        mark == null ? null : mark.clamp(0, max).toInt();
+    attempt.marks[questionIndex] = mark?.clamp(0, max).toInt();
     if (attempt.status == LecturerCaAttemptStatus.marked) {
       attempt.status = LecturerCaAttemptStatus.pending;
     }

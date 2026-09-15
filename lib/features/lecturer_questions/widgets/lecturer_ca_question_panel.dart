@@ -393,17 +393,22 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    for (final slot in _calendar.slots)
-                      RadioListTile<String>(
-                        value: slot.id,
-                        groupValue: _selectedSlotId,
-                        onChanged: slot.isAvailable
-                            ? (value) => setState(() => _selectedSlotId = value)
-                            : null,
-                        title: Text(slot.scheduleLabel),
-                        subtitle: Text('Capacity: ${slot.capacity}'),
-                        secondary: Chip(label: Text(slot.statusLabel)),
+                    RadioGroup<String>(
+                      groupValue: _selectedSlotId,
+                      onChanged: (value) => setState(() => _selectedSlotId = value),
+                      child: Column(
+                        children: [
+                          for (final slot in _calendar.slots)
+                            RadioListTile<String>(
+                              value: slot.id,
+                              enabled: slot.isAvailable,
+                              title: Text(slot.scheduleLabel),
+                              subtitle: Text('Capacity: ${slot.capacity}'),
+                              secondary: Chip(label: Text(slot.statusLabel)),
+                            ),
+                        ],
                       ),
+                    ),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 10,
@@ -594,56 +599,58 @@ class _CaQuestionCardState extends State<_CaQuestionCard> {
   Widget _fieldsForType(_CaQuestionDraft draft) {
     if (draft.type == 'single_choice' || draft.type == 'multiple_choice') {
       final multiple = draft.type == 'multiple_choice';
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (var i = 0; i < draft.options.length; i++)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 46,
-                    child: multiple
-                        ? Checkbox(
-                            value: draft.correctOptions.contains(String.fromCharCode(65 + i)),
-                            onChanged: (value) {
-                              final key = String.fromCharCode(65 + i);
-                              setState(() {
-                                if (value == true) {
-                                  draft.correctOptions.add(key);
-                                } else {
-                                  draft.correctOptions.remove(key);
-                                }
-                              });
-                            },
-                          )
-                        : Radio<String>(
-                            value: String.fromCharCode(65 + i),
-                            groupValue: draft.singleCorrect,
-                            onChanged: (value) {
-                              if (value != null) setState(() => draft.singleCorrect = value);
-                            },
-                          ),
-                  ),
-                  SizedBox(width: 30, child: Text('${String.fromCharCode(65 + i)}.')),
-                  Expanded(
-                    child: TextField(
-                      controller: draft.options[i],
-                      decoration: const InputDecoration(labelText: 'Answer option'),
+      return RadioGroup<String>(
+        groupValue: draft.singleCorrect,
+        onChanged: (value) {
+          if (value != null) setState(() => draft.singleCorrect = value);
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < draft.options.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 46,
+                      child: multiple
+                          ? Checkbox(
+                              value: draft.correctOptions.contains(String.fromCharCode(65 + i)),
+                              onChanged: (value) {
+                                final key = String.fromCharCode(65 + i);
+                                setState(() {
+                                  if (value == true) {
+                                    draft.correctOptions.add(key);
+                                  } else {
+                                    draft.correctOptions.remove(key);
+                                  }
+                                });
+                              },
+                            )
+                          : Radio<String>(
+                              value: String.fromCharCode(65 + i),
+                            ),
                     ),
-                  ),
-                ],
+                    SizedBox(width: 30, child: Text('${String.fromCharCode(65 + i)}.')),
+                    Expanded(
+                      child: TextField(
+                        controller: draft.options[i],
+                        decoration: const InputDecoration(labelText: 'Answer option'),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          if (multiple)
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              value: draft.partialMarking,
-              onChanged: (value) => setState(() => draft.partialMarking = value),
-              title: const Text('Allow partial marking'),
-            ),
-        ],
+            if (multiple)
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: draft.partialMarking,
+                onChanged: (value) => setState(() => draft.partialMarking = value),
+                title: const Text('Allow partial marking'),
+              ),
+          ],
+        ),
       );
     }
 

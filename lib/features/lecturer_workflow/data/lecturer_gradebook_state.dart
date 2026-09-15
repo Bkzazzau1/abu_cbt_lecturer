@@ -176,7 +176,7 @@ class LecturerGradebookState extends ChangeNotifier {
     final course = this.course(courseCode);
     if (course.resultsSubmitted) return;
     final student = _student(courseCode, matricNumber);
-    student.ca1 = score == null ? null : score.clamp(0, course.ca1Max).toInt();
+    student.ca1 = score?.clamp(0, course.ca1Max).toInt();
     student.lastUpdatedBy = _actor;
     LecturerCourseCollaborationState.instance.recordGradebookChange(
       courseCode: courseCode,
@@ -190,7 +190,7 @@ class LecturerGradebookState extends ChangeNotifier {
     final course = this.course(courseCode);
     if (course.resultsSubmitted) return;
     final student = _student(courseCode, matricNumber);
-    student.ca2 = score == null ? null : score.clamp(0, course.ca2Max).toInt();
+    student.ca2 = score?.clamp(0, course.ca2Max).toInt();
     student.lastUpdatedBy = _actor;
     LecturerCourseCollaborationState.instance.recordGradebookChange(
       courseCode: courseCode,

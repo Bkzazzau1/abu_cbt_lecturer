@@ -533,19 +533,25 @@ class _ExamOfficerReadinessPanelState extends State<ExamOfficerReadinessPanel> {
                       '${_state.remainingCandidates(paper)} candidates still need timetable capacity. Exam duration: ${paper.durationMinutes} minutes.',
                     ),
                     const SizedBox(height: 12),
-                    for (final slot in available)
-                      RadioListTile<String>(
-                        value: slot.id,
-                        groupValue: selected,
-                        onChanged: _durationMinutes(slot.startTime, slot.endTime) >=
-                                paper.durationMinutes
-                            ? (value) => setDialogState(() => selected = value)
-                            : null,
-                        title: Text(slot.scheduleLabel),
-                        subtitle: Text(
-                          '${slot.capacity} seats • ${_durationMinutes(slot.startTime, slot.endTime)} minutes${slot.capacity >= _state.remainingCandidates(paper) ? ' • can finish remaining candidates' : ' • additional sitting will be needed'}',
-                        ),
+                    RadioGroup<String>(
+                      groupValue: selected,
+                      onChanged: (value) => setDialogState(() => selected = value),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (final slot in available)
+                            RadioListTile<String>(
+                              value: slot.id,
+                              enabled: _durationMinutes(slot.startTime, slot.endTime) >=
+                                  paper.durationMinutes,
+                              title: Text(slot.scheduleLabel),
+                              subtitle: Text(
+                                '${slot.capacity} seats • ${_durationMinutes(slot.startTime, slot.endTime)} minutes${slot.capacity >= _state.remainingCandidates(paper) ? ' • can finish remaining candidates' : ' • additional sitting will be needed'}',
+                              ),
+                            ),
+                        ],
                       ),
+                    ),
                   ],
                 ),
               ),
