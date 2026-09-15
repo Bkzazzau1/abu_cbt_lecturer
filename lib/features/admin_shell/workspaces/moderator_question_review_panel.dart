@@ -6,7 +6,7 @@ import 'moderator_connected_review_panel.dart';
 
 enum QuestionReviewMode { examOfficer, moderator }
 
-class ModeratorQuestionReviewPanel extends StatelessWidget {
+class ModeratorQuestionReviewPanel extends StatefulWidget {
   const ModeratorQuestionReviewPanel({
     super.key,
     this.mode = QuestionReviewMode.examOfficer,
@@ -15,10 +15,23 @@ class ModeratorQuestionReviewPanel extends StatelessWidget {
   final QuestionReviewMode mode;
 
   @override
-  Widget build(BuildContext context) {
-    ExamOfficerDemoSeed.ensureSeeded();
+  State<ModeratorQuestionReviewPanel> createState() =>
+      _ModeratorQuestionReviewPanelState();
+}
 
-    if (mode == QuestionReviewMode.examOfficer) {
+class _ModeratorQuestionReviewPanelState
+    extends State<ModeratorQuestionReviewPanel> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ExamOfficerDemoSeed.ensureSeeded();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.mode == QuestionReviewMode.examOfficer) {
       return const ExamOfficerQuestionSubmissionPanel();
     }
 
