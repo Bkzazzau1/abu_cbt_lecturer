@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../admin_shell/workspaces/lecturer_course_collaboration_panel.dart';
 import '../../lecturer_workflow/data/lecturer_demo_state.dart';
 import 'folded_question_builder_panel.dart' as legacy;
 import 'lecturer_ca_question_panel.dart';
@@ -36,6 +37,11 @@ class _LecturerQuestionLivePanelState extends State<LecturerQuestionLivePanel> {
                 label: Text('CA Questions'),
                 icon: Icon(Icons.quiz_outlined),
               ),
+              ButtonSegment(
+                value: 'Course Collaboration',
+                label: Text('Course Collaboration'),
+                icon: Icon(Icons.groups_3_outlined),
+              ),
             ],
             selected: {_section},
             onSelectionChanged: (selection) =>
@@ -44,6 +50,8 @@ class _LecturerQuestionLivePanelState extends State<LecturerQuestionLivePanel> {
         ),
         if (_section == 'CA Questions')
           const LecturerCaQuestionPanel()
+        else if (_section == 'Course Collaboration')
+          const LecturerCourseCollaborationPanel()
         else
           _buildExamQuestions(),
       ],
