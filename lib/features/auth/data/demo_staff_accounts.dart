@@ -26,8 +26,6 @@ class DemoStaffAccount {
 
   String get fullName => '$title $firstName $lastName';
 
-  /// Shaped like the real backend's `/api/auth/login` response, so
-  /// `AuthSession.saveLogin` parses it exactly the same way.
   Map<String, dynamic> toLoginPayload() {
     return {
       'access_token': 'demo-$roleCode-token',
@@ -52,7 +50,7 @@ const demoStaffAccounts = <DemoStaffAccount>[
     title: 'Dr.',
     firstName: 'Amina',
     lastName: 'Bello',
-    staffId: 'DEMO-LEC-001',
+    staffId: '1001',
     email: 'lecturer.demo@abu.edu.ng',
   ),
   DemoStaffAccount(
