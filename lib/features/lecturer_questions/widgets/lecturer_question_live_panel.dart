@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../lecturer_workflow/data/lecturer_demo_state.dart';
 import 'folded_question_builder_panel.dart' as legacy;
+import 'lecturer_ca_question_panel.dart';
 
 class LecturerQuestionLivePanel extends StatefulWidget {
   const LecturerQuestionLivePanel({super.key});
@@ -14,9 +15,42 @@ class LecturerQuestionLivePanel extends StatefulWidget {
 class _LecturerQuestionLivePanelState extends State<LecturerQuestionLivePanel> {
   final LecturerDemoState _state = LecturerDemoState.instance;
   Key _builderKey = UniqueKey();
+  String _section = 'Exam Questions';
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 14),
+          child: SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(
+                value: 'Exam Questions',
+                label: Text('Exam Questions'),
+                icon: Icon(Icons.description_outlined),
+              ),
+              ButtonSegment(
+                value: 'CA Questions',
+                label: Text('CA Questions'),
+                icon: Icon(Icons.quiz_outlined),
+              ),
+            ],
+            selected: {_section},
+            onSelectionChanged: (selection) =>
+                setState(() => _section = selection.first),
+          ),
+        ),
+        if (_section == 'CA Questions')
+          const LecturerCaQuestionPanel()
+        else
+          _buildExamQuestions(),
+      ],
+    );
+  }
+
+  Widget _buildExamQuestions() {
     return AnimatedBuilder(
       animation: _state,
       builder: (context, _) {
