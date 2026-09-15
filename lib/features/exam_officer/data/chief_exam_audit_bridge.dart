@@ -72,7 +72,7 @@ class ChiefExamAuditBridge {
     try {
       for (final paper in _workflow.questionPapers) {
         final previousCount = _paperNoteCounts[paper.paperId] ?? 0;
-        final start = previousCount.clamp(0, paper.notes.length);
+        final start = previousCount.clamp(0, paper.notes.length).toInt();
 
         for (var i = start; i < paper.notes.length; i++) {
           final note = paper.notes[i];
@@ -107,7 +107,7 @@ class ChiefExamAuditBridge {
 
       for (final batch in _workflow.resultBatches) {
         final previousCount = _resultNoteCounts[batch.id] ?? 0;
-        final start = previousCount.clamp(0, batch.notes.length);
+        final start = previousCount.clamp(0, batch.notes.length).toInt();
 
         for (var i = start; i < batch.notes.length; i++) {
           final note = batch.notes[i];
