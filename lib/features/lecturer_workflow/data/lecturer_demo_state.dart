@@ -136,23 +136,32 @@ class LecturerDemoState extends ChangeNotifier {
       questions: const [
         LecturerDemoMarkingQuestion(
           id: 'q1',
-          question: 'Explain the difference between stack and queue data structures with suitable use cases.',
-          candidateAnswer: 'A stack follows last-in-first-out while a queue follows first-in-first-out. Stacks are used in recursion, undo operations and browser history. Queues are used in scheduling, printer jobs and breadth-first search.',
-          markingGuide: 'Award marks for LIFO stack, FIFO queue, at least one correct stack use case and at least one correct queue use case.',
+          question:
+              'Explain the difference between stack and queue data structures with suitable use cases.',
+          candidateAnswer:
+              'A stack follows last-in-first-out while a queue follows first-in-first-out. Stacks are used in recursion, undo operations and browser history. Queues are used in scheduling, printer jobs and breadth-first search.',
+          markingGuide:
+              'Award marks for LIFO stack, FIFO queue, at least one correct stack use case and at least one correct queue use case.',
           maxMark: 20,
         ),
         LecturerDemoMarkingQuestion(
           id: 'q2',
-          question: 'Describe how a binary search tree handles insertion and search operations.',
-          candidateAnswer: 'Insertion compares the value with the root and moves left or right until an empty position is found. Search follows the same comparison path. A balanced tree is efficient, while an unbalanced tree can degrade to linear search time.',
-          markingGuide: 'Award marks for comparison-based traversal, correct insertion point, search path, balanced-tree efficiency and worst-case linear degradation.',
+          question:
+              'Describe how a binary search tree handles insertion and search operations.',
+          candidateAnswer:
+              'Insertion compares the value with the root and moves left or right until an empty position is found. Search follows the same comparison path. A balanced tree is efficient, while an unbalanced tree can degrade to linear search time.',
+          markingGuide:
+              'Award marks for comparison-based traversal, correct insertion point, search path, balanced-tree efficiency and worst-case linear degradation.',
           maxMark: 20,
         ),
         LecturerDemoMarkingQuestion(
           id: 'q3',
-          question: 'Give one practical application of graph traversal in computer science.',
-          candidateAnswer: 'Graph traversal is used for route discovery and social network analysis.',
-          markingGuide: 'Award marks for one valid graph traversal application and a correct explanation of how traversal is used.',
+          question:
+              'Give one practical application of graph traversal in computer science.',
+          candidateAnswer:
+              'Graph traversal is used for route discovery and social network analysis.',
+          markingGuide:
+              'Award marks for one valid graph traversal application and a correct explanation of how traversal is used.',
           maxMark: 20,
         ),
       ],
@@ -168,23 +177,32 @@ class LecturerDemoState extends ChangeNotifier {
       questions: const [
         LecturerDemoMarkingQuestion(
           id: 'q1',
-          question: 'Explain the difference between stack and queue data structures with suitable use cases.',
-          candidateAnswer: 'Stack uses LIFO. Queue uses FIFO. Stack can be used for undo and queue can be used for scheduling.',
-          markingGuide: 'Award marks for LIFO stack, FIFO queue, at least one correct stack use case and at least one correct queue use case.',
+          question:
+              'Explain the difference between stack and queue data structures with suitable use cases.',
+          candidateAnswer:
+              'Stack uses LIFO. Queue uses FIFO. Stack can be used for undo and queue can be used for scheduling.',
+          markingGuide:
+              'Award marks for LIFO stack, FIFO queue, at least one correct stack use case and at least one correct queue use case.',
           maxMark: 20,
         ),
         LecturerDemoMarkingQuestion(
           id: 'q2',
-          question: 'Describe how a binary search tree handles insertion and search operations.',
-          candidateAnswer: 'Values smaller than a node move left and larger values move right. Insertion stops at an empty child and searching stops when the value is found or there is no child to continue.',
-          markingGuide: 'Award marks for comparison-based traversal, correct insertion point, search path, balanced-tree efficiency and worst-case linear degradation.',
+          question:
+              'Describe how a binary search tree handles insertion and search operations.',
+          candidateAnswer:
+              'Values smaller than a node move left and larger values move right. Insertion stops at an empty child and searching stops when the value is found or there is no child to continue.',
+          markingGuide:
+              'Award marks for comparison-based traversal, correct insertion point, search path, balanced-tree efficiency and worst-case linear degradation.',
           maxMark: 20,
         ),
         LecturerDemoMarkingQuestion(
           id: 'q3',
-          question: 'Give one practical application of graph traversal in computer science.',
-          candidateAnswer: 'Breadth-first search can find shortest paths in an unweighted network.',
-          markingGuide: 'Award marks for one valid graph traversal application and a correct explanation of how traversal is used.',
+          question:
+              'Give one practical application of graph traversal in computer science.',
+          candidateAnswer:
+              'Breadth-first search can find shortest paths in an unweighted network.',
+          markingGuide:
+              'Award marks for one valid graph traversal application and a correct explanation of how traversal is used.',
           maxMark: 20,
         ),
       ],
@@ -202,22 +220,29 @@ class LecturerDemoState extends ChangeNotifier {
         LecturerDemoMarkingQuestion(
           id: 'q1',
           question: 'Explain breadth-first and depth-first search.',
-          candidateAnswer: 'Breadth-first search explores level by level with a queue, while depth-first search follows a branch using recursion or a stack.',
-          markingGuide: 'Award marks for correct BFS order and queue, correct DFS depth-first behaviour and stack or recursion.',
+          candidateAnswer:
+              'Breadth-first search explores level by level with a queue, while depth-first search follows a branch using recursion or a stack.',
+          markingGuide:
+              'Award marks for correct BFS order and queue, correct DFS depth-first behaviour and stack or recursion.',
           maxMark: 20,
         ),
         LecturerDemoMarkingQuestion(
           id: 'q2',
           question: 'Explain one heuristic search strategy.',
-          candidateAnswer: 'A-star combines path cost with a heuristic estimate to choose the next state.',
-          markingGuide: 'Award marks for a valid heuristic search method, its evaluation rule and how it guides state expansion.',
+          candidateAnswer:
+              'A-star combines path cost with a heuristic estimate to choose the next state.',
+          markingGuide:
+              'Award marks for a valid heuristic search method, its evaluation rule and how it guides state expansion.',
           maxMark: 20,
         ),
         LecturerDemoMarkingQuestion(
           id: 'q3',
-          question: 'State one practical application of artificial intelligence search.',
-          candidateAnswer: 'Search can be used for route planning and game decision making.',
-          markingGuide: 'Award marks for one valid AI search application with a correct explanation.',
+          question:
+              'State one practical application of artificial intelligence search.',
+          candidateAnswer:
+              'Search can be used for route planning and game decision making.',
+          markingGuide:
+              'Award marks for one valid AI search application with a correct explanation.',
           maxMark: 20,
         ),
       ],
@@ -254,8 +279,10 @@ class LecturerDemoState extends ChangeNotifier {
 
   void updateQuestionMark(String scriptId, String questionId, int? mark) {
     final script = _script(scriptId);
-    final question = script.questions.firstWhere((item) => item.id == questionId);
-    script.marks[questionId] = mark?.clamp(0, question.maxMark);
+    final question =
+        script.questions.firstWhere((item) => item.id == questionId);
+    script.marks[questionId] =
+        mark == null ? null : mark.clamp(0, question.maxMark).toInt();
     if (script.status == LecturerDemoScriptStatus.marked ||
         script.status == LecturerDemoScriptStatus.submittedToExamOfficer) {
       script.status = LecturerDemoScriptStatus.pendingMarking;
@@ -284,7 +311,9 @@ class LecturerDemoState extends ChangeNotifier {
 
   void submitReadyBatch({String? courseCode}) {
     for (final script in _scripts) {
-      if (courseCode != null && courseCode != 'All' && script.courseCode != courseCode) {
+      if (courseCode != null &&
+          courseCode != 'All' &&
+          script.courseCode != courseCode) {
         continue;
       }
       if (script.status == LecturerDemoScriptStatus.marked) {
