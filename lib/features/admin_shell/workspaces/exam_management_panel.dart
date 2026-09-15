@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/auth/auth_session.dart';
 import 'exam_management_panel_legacy.dart' as legacy;
+import 'exam_officer_readiness_panel.dart';
 import 'ict_cbt_calendar_panel.dart';
 
 class ExamManagementPanel extends StatelessWidget {
@@ -23,6 +24,10 @@ class ExamManagementPanel extends StatelessWidget {
           legacy.ExamManagementPanel(),
         ],
       );
+    }
+
+    if (role == 'exam_officer') {
+      return const ExamOfficerReadinessPanel();
     }
 
     return const legacy.ExamManagementPanel();

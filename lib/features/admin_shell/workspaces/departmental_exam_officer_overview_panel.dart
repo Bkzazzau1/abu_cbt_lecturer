@@ -1,133 +1,214 @@
 import 'package:flutter/material.dart';
 
+import '../../exam_officer/data/exam_officer_workflow_state.dart';
+import '../../lecturer_workflow/data/cbt_calendar_state.dart';
+
 class DepartmentalExamOfficerOverviewPanel extends StatelessWidget {
   const DepartmentalExamOfficerOverviewPanel({super.key});
 
-  static const _signals = [
-    _ExamSignal('Questions submitted', '28/32', 0.88, Icons.quiz_outlined),
-    _ExamSignal('Questions approved', '22/32', 0.69, Icons.verified_outlined),
-    _ExamSignal(
-      'Eligible students',
-      '1,180/1,250',
-      0.94,
-      Icons.fact_check_outlined,
-    ),
-    _ExamSignal(
-      'Results submitted',
-      '18/32',
-      0.56,
-      Icons.workspace_premium_outlined,
-    ),
-  ];
-
-  static const _alerts = [
-    _ExamAlert(
-      'CSC 405 question not submitted',
-      'Dr. Musa Adamu • Deadline 15 June 2026',
-    ),
-    _ExamAlert(
-      'CSC 301 moderation still pending',
-      'Moderator comments due before HoD confirmation',
-    ),
-    _ExamAlert(
-      '70 students not exam eligible',
-      'Registration, CA, participation, and complaints checks',
-    ),
-    _ExamAlert(
-      '4 malpractice reports under review',
-      'AI proctoring and invigilator evidence attached',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    final workflow = ExamOfficerWorkflowState.instance;
+    final calendar = CbtCalendarState.instance;
+
+    return AnimatedBuilder(
+      animation: workflow,
+      builder: (context, _) {
+        return AnimatedBuilder(
+          animation: calendar,
+          builder: (context, _) {
+            final pendingQuestions = workflow.questionPapers
+                .where(
+                  (paper) =>
+                      paper.status != ExamOfficerQuestionStatus.readyForTimetable &&
+                      paper.status != ExamOfficerQuestionStatus.partiallyScheduled &&
+                      paper.status != ExamOfficerQuestionStatus.scheduled,
+                )
+                .length;
+            final pendingResults = workflow.resultBatches
+                .where(
+                  (batch) =>
+                      batch.status != ExamOfficerResultStatus.verified &&
+                      batch.status != ExamOfficerResultStatus.forwardedToHod,
+                )
+                .length;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(
-                  Icons.assignment_turned_in_outlined,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Computer Science Department Exams',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: text.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w900,
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.assignment_turned_in_outlined,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Department Examination Control',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.w900),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Course registrations include carryover students. Level students are unique students currently in that level, so the two totals are intentionally different.',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final width = constraints.maxWidth >= 1100
+                                ? (constraints.maxWidth - 60) / 6
+                                : constraints.maxWidth >= 600
+                                    ? (constraints.maxWidth - 12) / 2
+                                    : constraints.maxWidth;
+                            return Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              children: [
+                                _MetricCard(
+                                  width: width,
+                                  label: 'Level Students',
+                                  value: '${workflow.totalLevelStudents}',
+                                  detail: 'Unique 100–400L students',
+                                  icon: Icons.groups_2_outlined,
+                                ),
+                                _MetricCard(
+                                  width: width,
+                                  label: 'Course Registrations',
+                                  value: '${workflow.totalCourseRegistrations}',
+                                  detail: 'Exam candidate entries',
+                                  icon: Icons.app_registration_outlined,
+                                ),
+                                _MetricCard(
+                                  width: width,
+                                  label: 'Carryover Entries',
+                                  value: '${workflow.totalCarryoverRegistrations}',
+                                  detail: 'Included in course totals',
+                                  icon: Icons.replay_outlined,
+                                ),
+                                _MetricCard(
+                                  width: width,
+                                  label: 'Question Papers',
+                                  value: '${workflow.questionsReceived}',
+                                  detail: '$pendingQuestions still in review',
+                                  icon: Icons.quiz_outlined,
+                                ),
+                                _MetricCard(
+                                  width: width,
+                                  label: 'Exam Slots',
+                                  value: '${calendar.availableSlots.length}',
+                                  detail: '${workflow.questionsScheduled} fully scheduled',
+                                  icon: Icons.event_available_outlined,
+                                ),
+                                _MetricCard(
+                                  width: width,
+                                  label: 'Verified Results',
+                                  value: '${workflow.resultBatchesVerified}',
+                                  detail: '$pendingResults awaiting verification',
+                                  icon: Icons.verified_outlined,
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),
+                const SizedBox(height: 14),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final wide = constraints.maxWidth >= 920;
+                    final panelWidth = wide
+                        ? (constraints.maxWidth - 14) / 2
+                        : constraints.maxWidth;
+                    return Wrap(
+                      spacing: 14,
+                      runSpacing: 14,
+                      children: [
+                        SizedBox(
+                          width: panelWidth,
+                          child: _LevelLoadCard(workflow: workflow),
+                        ),
+                        SizedBox(
+                          width: panelWidth,
+                          child: _QuestionQueueCard(workflow: workflow),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Operational exam coordination under the HoD as Chief Exam Officer: 32 exam courses, 28 questions submitted, 22 approved, 1,180 eligible students, and 18 result batches submitted.',
-              style: text.bodyMedium,
-            ),
-            const SizedBox(height: 18),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final wide = constraints.maxWidth > 920;
-                final panelWidth = wide
-                    ? (constraints.maxWidth - 14) / 2
-                    : constraints.maxWidth;
-                return Wrap(
-                  spacing: 14,
-                  runSpacing: 14,
-                  children: [
-                    SizedBox(
-                      width: panelWidth,
-                      child: const _SignalPanel(signals: _signals),
-                    ),
-                    SizedBox(
-                      width: panelWidth,
-                      child: const _AlertPanel(alerts: _alerts),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 }
 
-class _SignalPanel extends StatelessWidget {
-  const _SignalPanel({required this.signals});
+class _LevelLoadCard extends StatelessWidget {
+  const _LevelLoadCard({required this.workflow});
 
-  final List<_ExamSignal> signals;
+  final ExamOfficerWorkflowState workflow;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(color: scheme.outlineVariant),
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Exam readiness signals',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+              'Courses by Level',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w900),
             ),
-            const SizedBox(height: 12),
-            for (final signal in signals) _SignalRow(signal: signal),
+            const SizedBox(height: 10),
+            for (final level in workflow.levels)
+              Builder(
+                builder: (context) {
+                  final courses = workflow.coursesForLevel(level);
+                  final registrations = courses.fold<int>(
+                    0,
+                    (sum, item) => sum + item.totalRegistered,
+                  );
+                  final carryover = courses.fold<int>(
+                    0,
+                    (sum, item) => sum + item.carryoverCount,
+                  );
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: CircleAvatar(
+                      child: Text(level.substring(0, 1)),
+                    ),
+                    title: Text(
+                      '$level • ${workflow.cohortCount(level)} students',
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    subtitle: Text(
+                      '${courses.length} courses • $registrations registrations • $carryover carryover',
+                    ),
+                  );
+                },
+              ),
           ],
         ),
       ),
@@ -135,79 +216,43 @@ class _SignalPanel extends StatelessWidget {
   }
 }
 
-class _SignalRow extends StatelessWidget {
-  const _SignalRow({required this.signal});
+class _QuestionQueueCard extends StatelessWidget {
+  const _QuestionQueueCard({required this.workflow});
 
-  final _ExamSignal signal;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        children: [
-          Icon(signal.icon, color: scheme.primary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        signal.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(signal.value),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                LinearProgressIndicator(
-                  value: signal.progress,
-                  minHeight: 7,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AlertPanel extends StatelessWidget {
-  const _AlertPanel({required this.alerts});
-
-  final List<_ExamAlert> alerts;
+  final ExamOfficerWorkflowState workflow;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border.all(color: scheme.outlineVariant),
-        borderRadius: BorderRadius.circular(8),
-      ),
+    final papers = workflow.questionPapers.take(6).toList();
+    return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Operational alerts',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+              'Question & Timetable Queue',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w900),
             ),
-            const SizedBox(height: 8),
-            for (final alert in alerts) _AlertRow(alert: alert),
+            const SizedBox(height: 10),
+            if (papers.isEmpty)
+              const Text('No lecturer question paper has been received yet.')
+            else
+              for (final paper in papers)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const CircleAvatar(
+                    child: Icon(Icons.description_outlined),
+                  ),
+                  title: Text('${paper.courseCode} • ${paper.title}'),
+                  subtitle: Text(
+                    '${workflow.candidateCountForCourse(paper.courseCode)} candidates • ${paper.lecturerName}',
+                  ),
+                  trailing: Chip(label: Text(paper.status.label)),
+                ),
           ],
         ),
       ),
@@ -215,58 +260,49 @@ class _AlertPanel extends StatelessWidget {
   }
 }
 
-class _AlertRow extends StatelessWidget {
-  const _AlertRow({required this.alert});
+class _MetricCard extends StatelessWidget {
+  const _MetricCard({
+    required this.width,
+    required this.label,
+    required this.value,
+    required this.detail,
+    required this.icon,
+  });
 
-  final _ExamAlert alert;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.report_problem_outlined, color: scheme.error),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  alert.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  alert.subtitle,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ExamSignal {
-  const _ExamSignal(this.label, this.value, this.progress, this.icon);
-
+  final double width;
   final String label;
   final String value;
-  final double progress;
+  final String detail;
   final IconData icon;
-}
 
-class _ExamAlert {
-  const _ExamAlert(this.title, this.subtitle);
-
-  final String title;
-  final String subtitle;
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: width,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: scheme.primary),
+          const SizedBox(height: 10),
+          Text(label, style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 4),
+          Text(detail, style: TextStyle(color: scheme.onSurfaceVariant)),
+        ],
+      ),
+    );
+  }
 }
