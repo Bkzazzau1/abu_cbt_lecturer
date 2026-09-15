@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../core/auth/auth_session.dart';
 import '../../exam_workflow/data/exam_results_api.dart';
+import 'exam_officer_level_results_panel.dart';
 import 'exam_officer_results_panel.dart';
+import 'exam_officer_script_archive_panel.dart';
+import 'hod_level_results_panel.dart';
 import 'results_approval_release_panel_legacy.dart' as legacy;
 
 class ResultsApprovalReleasePanel extends StatelessWidget {
@@ -18,7 +21,20 @@ class ResultsApprovalReleasePanel extends StatelessWidget {
         : (session?.roles.isNotEmpty == true ? session!.roles.first : '');
 
     if (role == 'exam_officer') {
-      return const ExamOfficerResultsPanel();
+      return const Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ExamOfficerResultsPanel(),
+          SizedBox(height: 16),
+          ExamOfficerLevelResultsPanel(),
+          SizedBox(height: 16),
+          ExamOfficerScriptArchivePanel(),
+        ],
+      );
+    }
+
+    if (role == 'hod') {
+      return const HodLevelResultsPanel();
     }
 
     return legacy.ResultsApprovalReleasePanel(api: api);

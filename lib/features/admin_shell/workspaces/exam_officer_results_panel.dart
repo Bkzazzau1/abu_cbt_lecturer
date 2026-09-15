@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../exam_officer/data/exam_officer_workflow_state.dart';
 import '../../lecturer_workflow/data/lecturer_gradebook_state.dart';
+import 'exam_officer_level_results_panel.dart';
 
 class ExamOfficerResultsPanel extends StatefulWidget {
   const ExamOfficerResultsPanel({super.key});
@@ -13,10 +14,40 @@ class ExamOfficerResultsPanel extends StatefulWidget {
 class _ExamOfficerResultsPanelState extends State<ExamOfficerResultsPanel> {
   final ExamOfficerWorkflowState _state = ExamOfficerWorkflowState.instance;
   final LecturerGradebookState _gradebook = LecturerGradebookState.instance;
+  String _section = 'Course Submissions';
   ExamOfficerResultStatus? _filter;
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(
+              value: 'Course Submissions',
+              icon: Icon(Icons.inbox_outlined),
+              label: Text('Course Submissions'),
+            ),
+            ButtonSegment(
+              value: 'Level Moderation',
+              icon: Icon(Icons.groups_2_outlined),
+              label: Text('Level Moderation'),
+            ),
+          ],
+          selected: {_section},
+          onSelectionChanged: (value) => setState(() => _section = value.first),
+        ),
+        const SizedBox(height: 14),
+        if (_section == 'Level Moderation')
+          const ExamOfficerLevelResultsPanel()
+        else
+          _courseSubmissions(),
+      ],
+    );
+  }
+
+  Widget _courseSubmissions() {
     return AnimatedBuilder(
       animation: _state,
       builder: (context, _) {
@@ -38,10 +69,11 @@ class _ExamOfficerResultsPanelState extends State<ExamOfficerResultsPanel> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Result Collection & Verification',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w900,
-                            ),
+                        'Lecturer Result Collection & Course Verification',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w900),
                       ),
                     ),
                     Chip(
@@ -53,7 +85,7 @@ class _ExamOfficerResultsPanelState extends State<ExamOfficerResultsPanel> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Receive lecturer result batches, inspect the submitted class record, return a batch for correction, verify complete results, and forward verified work to the HoD.',
+                  'Lecturers submit marked and graded course results here. The Exam Officer inspects each class record, returns problems to the lecturer, and verifies complete course submissions. Verified courses then feed the Level Moderation board; individual course batches are not sent directly to the HoD.',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -82,9 +114,7 @@ class _ExamOfficerResultsPanelState extends State<ExamOfficerResultsPanel> {
                 if (batches.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 28),
-                    child: Center(
-                      child: Text('No result batch is in this stage.'),
-                    ),
+                    child: Center(child: Text('No course result batch is in this stage.')),
                   )
                 else
                   for (final batch in batches) _batchCard(context, batch),
@@ -116,24 +146,21 @@ class _ExamOfficerResultsPanelState extends State<ExamOfficerResultsPanel> {
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 700),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${batch.courseCode} • ${batch.courseTitle}',
-                      style: const TextStyle(fontWeight: FontWeight.w900),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      batch.fullBatchSubmitted
-                          ? 'Full class gradebook submitted by lecturer'
-                          : '${batch.receivedScripts} marked script${batch.receivedScripts == 1 ? '' : 's'} received so far',
-                      style: TextStyle(color: scheme.onSurfaceVariant),
-                    ),
-                  ],
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${batch.courseCode} • ${batch.courseTitle}',
+                    style: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    batch.fullBatchSubmitted
+                        ? 'Full class gradebook submitted by lecturer'
+                        : '${batch.receivedScripts} marked script${batch.receivedScripts == 1 ? '' : 's'} received so far',
+                    style: TextStyle(color: scheme.onSurfaceVariant),
+                  ),
+                ],
               ),
               Chip(label: Text(batch.status.label)),
             ],
@@ -145,13 +172,12 @@ class _ExamOfficerResultsPanelState extends State<ExamOfficerResultsPanel> {
             children: [
               _pill('${batch.studentCount} students'),
               _pill('${batch.completeCount} complete'),
-              _pill('${batch.receivedScripts} submitted scripts'),
               _pill('${batch.classAverage.toStringAsFixed(1)}% class average'),
               _pill(batch.complete ? 'Complete batch' : 'Incomplete batch'),
             ],
           ),
           if (lastNote != null) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Text(
               '${lastNote.action}: ${lastNote.note.isEmpty ? 'No note added' : lastNote.note}',
               style: TextStyle(color: scheme.onSurfaceVariant),
@@ -190,25 +216,20 @@ class _ExamOfficerResultsPanelState extends State<ExamOfficerResultsPanel> {
                 FilledButton.icon(
                   onPressed: batch.complete
                       ? () => _withNote(
-                            title: 'Verify Result Batch',
-                            hint: 'Add a verification note for the audit trail.',
+                            title: 'Verify Course Result',
+                            hint: 'Verification note for the level result audit trail.',
                             action: (note) =>
                                 _state.verifyResultBatch(batch.id, note),
                           )
                       : null,
                   icon: const Icon(Icons.verified_outlined),
-                  label: const Text('Verify Batch'),
+                  label: const Text('Verify Course Result'),
                 ),
-              if (batch.status == ExamOfficerResultStatus.verified)
-                FilledButton.icon(
-                  onPressed: () => _withNote(
-                    title: 'Forward to HoD',
-                    hint: 'Add the note that should accompany this batch.',
-                    action: (note) =>
-                        _state.forwardResultToHod(batch.id, note),
-                  ),
-                  icon: const Icon(Icons.forward_to_inbox_outlined),
-                  label: const Text('Forward to HoD'),
+              if (batch.status == ExamOfficerResultStatus.verified ||
+                  batch.status == ExamOfficerResultStatus.forwardedToHod)
+                const Chip(
+                  avatar: Icon(Icons.layers_outlined, size: 18),
+                  label: Text('Ready for Level Result Board'),
                 ),
             ],
           ),
@@ -227,11 +248,10 @@ class _ExamOfficerResultsPanelState extends State<ExamOfficerResultsPanel> {
     final students = course == null
         ? const <LecturerGradebookStudent>[]
         : _gradebook.studentsFor(course.code);
-
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('${batch.courseCode} • Result Verification'),
+        title: Text('${batch.courseCode} • Submitted Results'),
         content: SizedBox(
           width: 900,
           child: SingleChildScrollView(
@@ -251,14 +271,9 @@ class _ExamOfficerResultsPanelState extends State<ExamOfficerResultsPanel> {
                 const SizedBox(height: 16),
                 if (students.isEmpty)
                   Text(
-                    'Individual gradebook rows are not available for this submitted script group. ${batch.receivedScripts} script${batch.receivedScripts == 1 ? '' : 's'} were received.',
+                    'Individual gradebook rows are not available for this script group. ${batch.receivedScripts} submitted script(s) are recorded.',
                   )
-                else ...[
-                  const Text(
-                    'Submitted class record',
-                    style: TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                  const SizedBox(height: 8),
+                else
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
@@ -273,35 +288,22 @@ class _ExamOfficerResultsPanelState extends State<ExamOfficerResultsPanel> {
                       ],
                       rows: [
                         for (final student in students)
-                          DataRow(
-                            cells: [
-                              DataCell(Text(student.matricNumber)),
-                              DataCell(Text(student.ca1?.toString() ?? '—')),
-                              DataCell(Text(student.ca2?.toString() ?? '—')),
-                              DataCell(Text(student.exam?.toString() ?? '—')),
-                              DataCell(
-                                Text(student.complete ? '${student.total}' : '—'),
-                              ),
-                              DataCell(
-                                Text(
-                                  course == null
-                                      ? '—'
-                                      : student.gradeFor(course),
-                                ),
-                              ),
-                              DataCell(Text(student.lastUpdatedBy)),
-                            ],
-                          ),
+                          DataRow(cells: [
+                            DataCell(Text(student.matricNumber)),
+                            DataCell(Text(student.ca1?.toString() ?? '—')),
+                            DataCell(Text(student.ca2?.toString() ?? '—')),
+                            DataCell(Text(student.exam?.toString() ?? '—')),
+                            DataCell(Text(student.complete ? '${student.total}' : '—')),
+                            DataCell(Text(course == null ? '—' : student.gradeFor(course))),
+                            DataCell(Text(student.lastUpdatedBy)),
+                          ]),
                       ],
                     ),
                   ),
-                ],
                 if (batch.notes.isNotEmpty) ...[
                   const SizedBox(height: 16),
-                  const Text(
-                    'Verification History',
-                    style: TextStyle(fontWeight: FontWeight.w900),
-                  ),
+                  const Text('Verification History',
+                      style: TextStyle(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 6),
                   for (final note in batch.notes)
                     Padding(
