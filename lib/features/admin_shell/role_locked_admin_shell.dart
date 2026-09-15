@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/auth/auth_session.dart';
 import '../../models/admin_role.dart';
 import 'admin_operations_shell.dart';
+import 'ict_availability_shell.dart';
 
 class RoleLockedAdminShell extends StatelessWidget {
   const RoleLockedAdminShell({super.key});
@@ -43,6 +44,11 @@ class RoleLockedAdminShell extends StatelessWidget {
         ),
       );
     }
+
+    if (role == AdminRole.ictAdmin) {
+      return const IctAvailabilityShell();
+    }
+
     return AdminOperationsShell(initialRole: role, lockRole: true);
   }
 }
