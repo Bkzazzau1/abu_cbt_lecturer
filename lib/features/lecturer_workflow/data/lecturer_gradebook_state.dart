@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/auth/auth_session.dart';
+import 'lecturer_course_collaboration_state.dart';
 import 'lecturer_demo_state.dart';
 
 class LecturerCourseTeacher {
@@ -91,8 +93,8 @@ class LecturerGradebookState extends ChangeNotifier {
       ca2Max: 10,
       examMax: 80,
       lecturers: const [
-        LecturerCourseTeacher(name: 'Dr. Amina Bello', role: 'Lead Lecturer'),
-        LecturerCourseTeacher(name: 'Dr. Yusuf Abdullahi', role: 'Co-Lecturer'),
+        LecturerCourseTeacher(name: 'Dr. Amina Bello', role: 'Course Lecturer'),
+        LecturerCourseTeacher(name: 'Dr. Yusuf Abdullahi', role: 'Course Lecturer'),
       ],
     ),
     LecturerGradebookCourse(
@@ -105,8 +107,8 @@ class LecturerGradebookState extends ChangeNotifier {
       ca2Max: 10,
       examMax: 80,
       lecturers: const [
-        LecturerCourseTeacher(name: 'Dr. Amina Bello', role: 'Lead Lecturer'),
-        LecturerCourseTeacher(name: 'Dr. Grace Adamu', role: 'Co-Lecturer'),
+        LecturerCourseTeacher(name: 'Dr. Amina Bello', role: 'Course Lecturer'),
+        LecturerCourseTeacher(name: 'Dr. Grace Adamu', role: 'Course Lecturer'),
       ],
     ),
     LecturerGradebookCourse(
@@ -119,8 +121,8 @@ class LecturerGradebookState extends ChangeNotifier {
       ca2Max: 10,
       examMax: 80,
       lecturers: const [
-        LecturerCourseTeacher(name: 'Dr. Amina Bello', role: 'Lead Lecturer'),
-        LecturerCourseTeacher(name: 'Dr. Sani Bello', role: 'Co-Lecturer'),
+        LecturerCourseTeacher(name: 'Dr. Amina Bello', role: 'Course Lecturer'),
+        LecturerCourseTeacher(name: 'Dr. Sani Bello', role: 'Course Lecturer'),
       ],
     ),
   ];
@@ -168,12 +170,19 @@ class LecturerGradebookState extends ChangeNotifier {
   List<LecturerGradebookStudent> studentsFor(String courseCode) =>
       List.unmodifiable(_students.where((item) => item.courseCode == courseCode));
 
+  String get _actor => AuthSession.instance.session?.name ?? 'Course Lecturer';
+
   void updateCa1(String courseCode, String matricNumber, int? score) {
     final course = this.course(courseCode);
     if (course.resultsSubmitted) return;
     final student = _student(courseCode, matricNumber);
     student.ca1 = score == null ? null : score.clamp(0, course.ca1Max).toInt();
-    student.lastUpdatedBy = 'Dr. Amina Bello';
+    student.lastUpdatedBy = _actor;
+    LecturerCourseCollaborationState.instance.recordGradebookChange(
+      courseCode: courseCode,
+      actor: _actor,
+      action: 'Updated CA 1 for $matricNumber',
+    );
     notifyListeners();
   }
 
@@ -182,7 +191,12 @@ class LecturerGradebookState extends ChangeNotifier {
     if (course.resultsSubmitted) return;
     final student = _student(courseCode, matricNumber);
     student.ca2 = score == null ? null : score.clamp(0, course.ca2Max).toInt();
-    student.lastUpdatedBy = 'Dr. Amina Bello';
+    student.lastUpdatedBy = _actor;
+    LecturerCourseCollaborationState.instance.recordGradebookChange(
+      courseCode: courseCode,
+      actor: _actor,
+      action: 'Updated CA 2 for $matricNumber',
+    );
     notifyListeners();
   }
 
@@ -196,6 +210,10 @@ class LecturerGradebookState extends ChangeNotifier {
   void submitResults(String courseCode) {
     if (!canSubmitResults(courseCode)) return;
     course(courseCode).resultsSubmitted = true;
+    LecturerCourseCollaborationState.instance.lockGradebook(
+      courseCode: courseCode,
+      actor: _actor,
+    );
     notifyListeners();
   }
 
@@ -264,6 +282,11 @@ class LecturerGradebookState extends ChangeNotifier {
       if (matchedStudent.exam != scaled) {
         matchedStudent.exam = scaled;
         matchedStudent.lastUpdatedBy = 'Exam Marking';
+        LecturerCourseCollaborationState.instance.recordGradebookChange(
+          courseCode: matchedCourse.code,
+          actor: 'Exam Marking',
+          action: 'Synced exam score for ${matchedStudent.matricNumber}',
+        );
         changed = true;
       }
     }
