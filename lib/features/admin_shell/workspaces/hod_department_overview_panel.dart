@@ -5,6 +5,7 @@ import '../../exam_officer/data/exam_officer_demo_seed.dart';
 import '../../exam_officer/data/exam_officer_invigilation_state.dart';
 import '../../exam_officer/data/exam_officer_workflow_state.dart';
 import '../../exam_officer/data/level_result_moderation_state.dart';
+import '../../staff_management/data/department_staff_appointments_state.dart';
 
 class HodDepartmentOverviewPanel extends StatefulWidget {
   const HodDepartmentOverviewPanel({super.key});
@@ -21,6 +22,8 @@ class _HodDepartmentOverviewPanelState
       ExamOfficerInvigilationState.instance;
   final ExamMalpracticeState _malpractice = ExamMalpracticeState.instance;
   final LevelResultModerationState _results = LevelResultModerationState.instance;
+  final DepartmentStaffAppointmentsState _appointments =
+      DepartmentStaffAppointmentsState.instance;
 
   @override
   void initState() {
@@ -40,7 +43,10 @@ class _HodDepartmentOverviewPanelState
           animation: _malpractice,
           builder: (context, ___) => AnimatedBuilder(
             animation: _results,
-            builder: (context, ____) => _content(context),
+            builder: (context, ____) => AnimatedBuilder(
+              animation: _appointments,
+              builder: (context, _____) => _content(context),
+            ),
           ),
         ),
       ),
@@ -49,13 +55,19 @@ class _HodDepartmentOverviewPanelState
 
   Widget _content(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final staff = _workflow.courseRegistrations
-        .expand((course) => course.lecturers)
-        .toSet();
+    final appointedLecturers = <String>{};
+    final appointedModerators = <String>{};
+    for (final course in _workflow.courseRegistrations) {
+      appointedLecturers.addAll(_appointments.lecturersFor(course.courseCode));
+      appointedModerators.addAll(_appointments.moderatorsFor(course.courseCode));
+    }
+
     final moderationAttention = _workflow.questionPapers
-        .where((paper) =>
-            paper.status == ExamOfficerQuestionStatus.withModerator ||
-            paper.status == ExamOfficerQuestionStatus.correctionRequested)
+        .where(
+          (paper) =>
+              paper.status == ExamOfficerQuestionStatus.withModerator ||
+              paper.status == ExamOfficerQuestionStatus.correctionRequested,
+        )
         .length;
     final scheduledPapers = _workflow.questionPapers
         .where((paper) => paper.status == ExamOfficerQuestionStatus.scheduled)
@@ -73,21 +85,46 @@ class _HodDepartmentOverviewPanelState
         .length;
 
     final cards = [
-      _Metric('Students', '${_workflow.totalLevelStudents}',
-          Icons.groups_2_outlined),
-      _Metric('Academic staff', '${staff.length}', Icons.school_outlined),
-      _Metric('Registered courses', '${_workflow.courseRegistrations.length}',
-          Icons.menu_book_outlined),
-      _Metric('Exam papers', '${_workflow.questionPapers.length}',
-          Icons.description_outlined),
-      _Metric('Fully scheduled', '$scheduledPapers',
-          Icons.event_available_outlined),
-      _Metric('Moderation attention', '$moderationAttention',
-          Icons.rule_folder_outlined),
-      _Metric('Results awaiting HoD', '$waitingResultApproval',
-          Icons.workspace_premium_outlined),
-      _Metric('Malpractice awaiting HoD', '$malpracticeWaiting',
-          Icons.gavel_outlined),
+      _Metric(
+        'Students',
+        '${_workflow.totalLevelStudents}',
+        Icons.groups_2_outlined,
+      ),
+      _Metric(
+        'Appointed lecturers',
+        '${appointedLecturers.length}',
+        Icons.school_outlined,
+      ),
+      _Metric(
+        'Moderator pool',
+        '${appointedModerators.length}',
+        Icons.rule_folder_outlined,
+      ),
+      _Metric(
+        'Registered courses',
+        '${_workflow.courseRegistrations.length}',
+        Icons.menu_book_outlined,
+      ),
+      _Metric(
+        'Exam papers',
+        '${_workflow.questionPapers.length}',
+        Icons.description_outlined,
+      ),
+      _Metric(
+        'Fully scheduled',
+        '$scheduledPapers',
+        Icons.event_available_outlined,
+      ),
+      _Metric(
+        'Results awaiting HoD',
+        '$waitingResultApproval',
+        Icons.workspace_premium_outlined,
+      ),
+      _Metric(
+        'Malpractice awaiting HoD',
+        '$malpracticeWaiting',
+        Icons.gavel_outlined,
+      ),
     ];
 
     final decisionItems = <_DecisionItem>[
@@ -100,19 +137,19 @@ class _HodDepartmentOverviewPanelState
       if (missingInvigilation > 0)
         _DecisionItem(
           'Invigilation coverage gap',
-          '$missingInvigilation scheduled exam(s) currently have no posted invigilator in the shared workflow.',
+          '$missingInvigilation scheduled exam(s) currently have no posted invigilator.',
           Icons.person_off_outlined,
         ),
       if (waitingResultApproval > 0)
         _DecisionItem(
           'Level results awaiting decision',
-          '$waitingResultApproval level package(s) are waiting for HoD review.',
+          '$waitingResultApproval level package(s) are waiting for final HoD review.',
           Icons.workspace_premium_outlined,
         ),
       if (malpracticeWaiting > 0)
         _DecisionItem(
           'Escalated malpractice cases',
-          '$malpracticeWaiting case file(s) require HoD review or referral.',
+          '$malpracticeWaiting case file(s) require HoD review or committee referral.',
           Icons.gavel_outlined,
         ),
       if (_workflow.totalCarryoverRegistrations > 0)
@@ -151,7 +188,7 @@ class _HodDepartmentOverviewPanelState
                       ),
                       const SizedBox(height: 7),
                       Text(
-                        'Live supervisory summary derived from the shared course registry, examination workflow, moderation, invigilation, malpractice and level-result states. HoD oversight does not replace Exam Officer operational duties.',
+                        'The HoD is the departmental Chief Exam Officer and academic authority. This dashboard combines staff appointments, course allocation, exam operations, moderation, invigilation, malpractice and level-result decisions. Routine execution may be delegated to the Exam Officer, while the HoD retains authority to intervene directly.',
                         style: TextStyle(color: scheme.onSurfaceVariant),
                       ),
                     ],
@@ -241,8 +278,10 @@ class _MetricCard extends StatelessWidget {
                         .headlineMedium
                         ?.copyWith(fontWeight: FontWeight.w900),
                   ),
-                  Text(item.label,
-                      style: const TextStyle(fontWeight: FontWeight.w800)),
+                  Text(
+                    item.label,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
                 ],
               ),
             ),
@@ -283,12 +322,12 @@ class _DecisionQueue extends StatelessWidget {
                   ?.copyWith(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 6),
-            const Text('Items that merit supervisory review or escalation.'),
+            const Text('Items requiring Chief Exam Officer or HoD attention.'),
             const SizedBox(height: 12),
             if (items.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
-                child: Center(child: Text('No current supervisory alert.')),
+                child: Center(child: Text('No current department alert.')),
               )
             else
               for (final item in items)
@@ -299,8 +338,10 @@ class _DecisionQueue extends StatelessWidget {
                     foregroundColor: scheme.onSecondaryContainer,
                     child: Icon(item.icon),
                   ),
-                  title: Text(item.title,
-                      style: const TextStyle(fontWeight: FontWeight.w800)),
+                  title: Text(
+                    item.title,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
                   subtitle: Text(item.detail),
                 ),
           ],
@@ -340,8 +381,10 @@ class _LevelSnapshot extends StatelessWidget {
                   children: [
                     SizedBox(
                       width: 90,
-                      child: Text(level,
-                          style: const TextStyle(fontWeight: FontWeight.w800)),
+                      child: Text(
+                        level,
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
                     ),
                     Expanded(
                       child: Text(
