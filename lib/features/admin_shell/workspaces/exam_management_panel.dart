@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/auth/auth_session.dart';
+import '../../exam_officer/data/exam_officer_demo_seed.dart';
 import 'exam_management_panel_legacy.dart' as legacy;
 import 'exam_officer_invigilation_panel.dart';
 import 'exam_officer_readiness_panel.dart';
@@ -29,6 +30,7 @@ class ExamManagementPanel extends StatelessWidget {
     }
 
     if (role == 'exam_officer') {
+      ExamOfficerDemoSeed.ensureSeeded();
       return const Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
