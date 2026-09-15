@@ -33,6 +33,13 @@ extension CaAssessmentStatusLabel on CaAssessmentStatus {
   }
 }
 
+class CaMatchPair {
+  const CaMatchPair({required this.left, required this.right});
+
+  final String left;
+  final String right;
+}
+
 class CaQuestionSnapshot {
   const CaQuestionSnapshot({
     required this.type,
@@ -40,6 +47,12 @@ class CaQuestionSnapshot {
     required this.marks,
     required this.answer,
     this.options = const [],
+    this.correctOptions = const [],
+    this.partialMarking = false,
+    this.rubric = '',
+    this.matchPairs = const [],
+    this.imageFileName = '',
+    this.imageFileUrl = '',
   });
 
   final String type;
@@ -47,6 +60,18 @@ class CaQuestionSnapshot {
   final int marks;
   final String answer;
   final List<String> options;
+  final List<String> correctOptions;
+  final bool partialMarking;
+  final String rubric;
+  final List<CaMatchPair> matchPairs;
+  final String imageFileName;
+  final String imageFileUrl;
+
+  bool get autoMarkable =>
+      type == 'single_choice' ||
+      type == 'multiple_choice' ||
+      type == 'fill_blank' ||
+      type == 'drag_drop';
 }
 
 class CbtCalendarSlot {
@@ -192,8 +217,81 @@ class CbtCalendarState extends ChangeNotifier {
             endTime: '11:00',
             venue: 'CBT Centre C',
             capacity: 120,
+            bookedAssessmentId: 'ca-demo-csc305-ca1',
+            bookedCourseCode: 'CSC305',
+            bookedCaLabel: 'CA 1',
           ),
-        ];
+        ] {
+    _assessments.add(
+      CaAssessmentRecord(
+        id: 'ca-demo-csc305-ca1',
+        courseId: 3,
+        courseCode: 'CSC305',
+        courseTitle: 'Data Structures',
+        caLabel: 'CA 1',
+        title: 'CSC305 CA 1 CBT',
+        durationMinutes: 35,
+        status: CaAssessmentStatus.scheduled,
+        slotId: 'slot-4',
+        questions: const [
+          CaQuestionSnapshot(
+            type: 'single_choice',
+            prompt: 'Which data structure follows last-in-first-out ordering?',
+            marks: 2,
+            answer: 'B: Stack',
+            options: ['Queue', 'Stack', 'Tree', 'Graph'],
+            correctOptions: ['B'],
+          ),
+          CaQuestionSnapshot(
+            type: 'multiple_choice',
+            prompt: 'Select the linear data structures.',
+            marks: 3,
+            answer: 'A; B',
+            options: ['Array', 'Queue', 'Tree', 'Graph'],
+            correctOptions: ['A', 'B'],
+            partialMarking: true,
+          ),
+          CaQuestionSnapshot(
+            type: 'fill_blank',
+            prompt: 'A queue follows the ____ principle.',
+            marks: 2,
+            answer: 'FIFO; first in first out',
+          ),
+          CaQuestionSnapshot(
+            type: 'essay',
+            prompt: 'Explain one practical use of a stack.',
+            marks: 5,
+            answer: 'Award marks for a valid stack application and correct LIFO explanation.',
+            rubric: 'Application 2 marks; LIFO explanation 3 marks.',
+          ),
+          CaQuestionSnapshot(
+            type: 'drag_drop',
+            prompt: 'Match each structure to its ordering rule.',
+            marks: 4,
+            answer: 'Stack→LIFO; Queue→FIFO',
+            matchPairs: [
+              CaMatchPair(left: 'Stack', right: 'LIFO'),
+              CaMatchPair(left: 'Queue', right: 'FIFO'),
+            ],
+          ),
+          CaQuestionSnapshot(
+            type: 'image_question',
+            prompt: 'Study the diagram and identify the traversal shown.',
+            marks: 2,
+            answer: 'Use the diagram evidence and identify the traversal correctly.',
+            imageFileName: 'sample_graph.png',
+            imageFileUrl: 'demo://uploads/question_image/sample_graph.png',
+          ),
+          CaQuestionSnapshot(
+            type: 'file_upload',
+            prompt: 'Upload your implementation and short explanation.',
+            marks: 2,
+            answer: 'Check correctness, readability and explanation.',
+          ),
+        ],
+      ),
+    );
+  }
 
   static final CbtCalendarState instance = CbtCalendarState._();
 

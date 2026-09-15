@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../lecturer_workflow/data/lecturer_demo_state.dart';
 import '../../lecturer_workflow/services/lecturer_exam_script_pdf_service.dart';
+import 'lecturer_ca_marking_panel.dart';
 import 'lecturer_connected_marking_panel.dart';
 
 class LecturerPdfEnabledMarkingPanel extends StatefulWidget {
@@ -24,10 +25,46 @@ class _LecturerPdfEnabledMarkingPanelState
       const LecturerExamScriptPdfService();
 
   String? _selectedScriptId;
+  String _mode = 'Exam Marking';
   bool _busy = false;
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 14),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(
+                  value: 'Exam Marking',
+                  label: Text('Exam Marking'),
+                  icon: Icon(Icons.description_outlined),
+                ),
+                ButtonSegment(
+                  value: 'CA Marking',
+                  label: Text('CA Marking'),
+                  icon: Icon(Icons.fact_check_outlined),
+                ),
+              ],
+              selected: {_mode},
+              onSelectionChanged: (selection) =>
+                  setState(() => _mode = selection.first),
+            ),
+          ),
+        ),
+        if (_mode == 'CA Marking')
+          const LecturerCaMarkingPanel()
+        else
+          _buildExamMarking(),
+      ],
+    );
+  }
+
+  Widget _buildExamMarking() {
     return AnimatedBuilder(
       animation: _state,
       builder: (context, _) {
