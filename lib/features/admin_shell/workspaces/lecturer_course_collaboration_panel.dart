@@ -102,8 +102,6 @@ class _LecturerCourseCollaborationPanelState
             for (final item in work) ...[
               _WorkCard(
                 item: item,
-                actor: _actor,
-                state: _state,
                 onEdit: item.locked ? null : () => _edit(item),
                 onSuggest: () => _suggest(item),
                 onReview: () => _review(item),
@@ -299,16 +297,12 @@ class _LecturerCourseCollaborationPanelState
 class _WorkCard extends StatelessWidget {
   const _WorkCard({
     required this.item,
-    required this.actor,
-    required this.state,
     required this.onEdit,
     required this.onSuggest,
     required this.onReview,
   });
 
   final LecturerCourseWorkItem item;
-  final String actor;
-  final LecturerCourseCollaborationState state;
   final VoidCallback? onEdit;
   final VoidCallback onSuggest;
   final VoidCallback onReview;
