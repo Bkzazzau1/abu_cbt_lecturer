@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/auth/auth_session.dart';
 import '../../exam_workflow/data/exam_results_api.dart';
+import 'exam_officer_academic_standing_panel.dart';
 import 'exam_officer_level_results_panel.dart';
 import 'exam_officer_results_panel.dart';
 import 'exam_officer_script_archive_panel.dart';
@@ -27,6 +28,8 @@ class ResultsApprovalReleasePanel extends StatelessWidget {
           ExamOfficerResultsPanel(),
           SizedBox(height: 16),
           ExamOfficerLevelResultsPanel(),
+          SizedBox(height: 16),
+          ExamOfficerAcademicStandingPanel(),
           SizedBox(height: 16),
           ExamOfficerScriptArchivePanel(),
         ],
