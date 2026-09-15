@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/auth/auth_session.dart';
 import '../../exam_workflow/data/exam_results_api.dart';
 import 'exam_officer_results_panel.dart';
+import 'hod_level_results_panel.dart';
 import 'results_approval_release_panel_legacy.dart' as legacy;
 
 class ResultsApprovalReleasePanel extends StatelessWidget {
@@ -19,6 +20,10 @@ class ResultsApprovalReleasePanel extends StatelessWidget {
 
     if (role == 'exam_officer') {
       return const ExamOfficerResultsPanel();
+    }
+
+    if (role == 'hod') {
+      return const HodLevelResultsPanel();
     }
 
     return legacy.ResultsApprovalReleasePanel(api: api);
