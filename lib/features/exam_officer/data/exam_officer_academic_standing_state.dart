@@ -263,7 +263,8 @@ class ExamOfficerAcademicStandingState extends ChangeNotifier {
       _previousSummary(ExamOfficerLevelStudent student, int studentIndex) {
     final special = _specialStandingCase(student.matricNumber);
     final levelNumber = int.tryParse(student.level.substring(0, 3)) ?? 100;
-    final completedYears = ((levelNumber - 100) ~/ 100).clamp(0, 3);
+    final completedYears =
+        ((levelNumber - 100) ~/ 100).clamp(0, 3).toInt();
     if (completedYears == 0) {
       return (
         registeredUnits: 0,
