@@ -9,11 +9,12 @@ class IctAvailabilityShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final wideHeader = MediaQuery.sizeOf(context).width >= 720;
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppBar(
         toolbarHeight: 72,
-        titleSpacing: 24,
+        titleSpacing: 20,
         title: Row(
           children: [
             Container(
@@ -36,10 +37,14 @@ class IctAvailabilityShell extends StatelessWidget {
                 children: [
                   Text(
                     'General ICT Admin',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontWeight: FontWeight.w900),
                   ),
                   Text(
                     'Hall & Time Operations',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -48,48 +53,54 @@ class IctAvailabilityShell extends StatelessWidget {
           ],
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 17),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11),
-              decoration: BoxDecoration(
-                color: scheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(999),
-              ),
-              alignment: Alignment.center,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.lock_outline,
-                    size: 16,
-                    color: scheme.onSecondaryContainer,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Operational Access',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 12,
+          if (wideHeader)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 17),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 11),
+                decoration: BoxDecoration(
+                  color: scheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.lock_outline,
+                      size: 16,
                       color: scheme.onSecondaryContainer,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Text(
+                      'Operational Access',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12,
+                        color: scheme.onSecondaryContainer,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
+          if (wideHeader) const SizedBox(width: 8),
           IconButton(
             tooltip: 'Sign out',
             onPressed: () => AuthSession.instance.signOut(),
             icon: const Icon(Icons.logout_outlined),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
         ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+          padding: EdgeInsets.fromLTRB(
+            wideHeader ? 20 : 12,
+            20,
+            wideHeader ? 20 : 12,
+            32,
+          ),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1500),
