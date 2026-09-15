@@ -4,6 +4,7 @@ import '../../admin_shell/workspaces/lecturer_course_collaboration_panel.dart';
 import '../../lecturer_workflow/data/lecturer_demo_state.dart';
 import 'folded_question_builder_panel.dart' as legacy;
 import 'lecturer_ca_question_panel.dart';
+import 'lecturer_question_import_panel.dart';
 
 class LecturerQuestionLivePanel extends StatefulWidget {
   const LecturerQuestionLivePanel({super.key});
@@ -38,6 +39,11 @@ class _LecturerQuestionLivePanelState extends State<LecturerQuestionLivePanel> {
                 icon: Icon(Icons.quiz_outlined),
               ),
               ButtonSegment(
+                value: 'Upload Questions',
+                label: Text('Upload Questions'),
+                icon: Icon(Icons.upload_file_outlined),
+              ),
+              ButtonSegment(
                 value: 'Course Collaboration',
                 label: Text('Course Collaboration'),
                 icon: Icon(Icons.groups_3_outlined),
@@ -50,6 +56,8 @@ class _LecturerQuestionLivePanelState extends State<LecturerQuestionLivePanel> {
         ),
         if (_section == 'CA Questions')
           const LecturerCaQuestionPanel()
+        else if (_section == 'Upload Questions')
+          const LecturerQuestionImportPanel()
         else if (_section == 'Course Collaboration')
           const LecturerCourseCollaborationPanel()
         else

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'lecturer_course_materials_panel.dart';
 import 'lecturer_course_overview_panel_legacy.dart' as legacy;
 import 'lecturer_gradebook_panel.dart';
 
@@ -31,6 +32,11 @@ class _LecturerCourseOverviewPanelState extends State<LecturerCourseOverviewPane
                   icon: Icon(Icons.menu_book_outlined),
                 ),
                 ButtonSegment(
+                  value: 'Course Materials',
+                  label: Text('Course Materials'),
+                  icon: Icon(Icons.library_books_outlined),
+                ),
+                ButtonSegment(
                   value: 'Students & Scores',
                   label: Text('Students & Scores'),
                   icon: Icon(Icons.groups_2_outlined),
@@ -44,6 +50,8 @@ class _LecturerCourseOverviewPanelState extends State<LecturerCourseOverviewPane
         ),
         if (_section == 'Students & Scores')
           const LecturerGradebookPanel()
+        else if (_section == 'Course Materials')
+          const LecturerCourseMaterialsPanel()
         else
           const legacy.LecturerCourseOverviewPanel(),
       ],
