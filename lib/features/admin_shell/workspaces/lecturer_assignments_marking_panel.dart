@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/auth/auth_session.dart';
 import 'lecturer_assignments_marking_panel_legacy.dart' as legacy;
-import 'lecturer_connected_marking_panel.dart';
+import 'lecturer_pdf_enabled_marking_panel.dart';
 
 class LecturerAssignmentsMarkingPanel extends StatelessWidget {
   const LecturerAssignmentsMarkingPanel({
@@ -20,7 +20,7 @@ class LecturerAssignmentsMarkingPanel extends StatelessWidget {
         : (session?.roles.isNotEmpty == true ? session!.roles.first : '');
 
     if (role == 'lecturer') {
-      return LecturerConnectedMarkingPanel(section: section);
+      return LecturerPdfEnabledMarkingPanel(section: section);
     }
 
     return legacy.LecturerAssignmentsMarkingPanel(section: section);
