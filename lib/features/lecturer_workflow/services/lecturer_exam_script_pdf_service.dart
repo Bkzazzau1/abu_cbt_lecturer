@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../data/lecturer_demo_state.dart';
+import 'lecturer_exam_script_pdf_save.dart';
 
 class LecturerExamScriptPdfMetadata {
   const LecturerExamScriptPdfMetadata({
@@ -145,7 +146,7 @@ class LecturerExamScriptPdfService {
   Future<void> downloadScript(LecturerDemoExamScript script) async {
     final metadata = metadataFor(script);
     final bytes = await buildPdf(script);
-    await Printing.sharePdf(bytes: bytes, filename: fileName(metadata));
+    await saveExamScriptPdf(bytes, fileName(metadata));
   }
 
   String fileName(LecturerExamScriptPdfMetadata metadata) {
@@ -199,7 +200,6 @@ class LecturerExamScriptPdfService {
       width: double.infinity,
       decoration: pw.BoxDecoration(
         border: pw.Border.all(color: PdfColors.grey400, width: 0.6),
-        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
       ),
       padding: const pw.EdgeInsets.all(10),
       child: pw.Column(
