@@ -1,8 +1,19 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/auth/auth_session.dart';
 import '../../lecturer_workflow/data/cbt_calendar_state.dart';
 import '../data/lecturer_question_api.dart';
+
+const _caFormats = <_CaFormat>[
+  _CaFormat('single_choice', 'Single Choice', Icons.radio_button_checked_outlined),
+  _CaFormat('multiple_choice', 'Multiple Choice', Icons.check_box_outlined),
+  _CaFormat('fill_blank', 'Fill in the Blank', Icons.short_text_outlined),
+  _CaFormat('essay', 'Essay', Icons.notes_outlined),
+  _CaFormat('drag_drop', 'Drag & Drop', Icons.drag_indicator_outlined),
+  _CaFormat('image_question', 'Image Question', Icons.image_outlined),
+  _CaFormat('file_upload', 'File Upload', Icons.upload_file_outlined),
+];
 
 class LecturerCaQuestionPanel extends StatefulWidget {
   const LecturerCaQuestionPanel({super.key});
@@ -24,8 +35,8 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
   String? _activeAssessmentId;
   List<QuestionCourseOption> _courses = const [];
   final List<_CaQuestionDraft> _questions = [
-    _CaQuestionDraft.objective(),
-    _CaQuestionDraft.essay(),
+    _CaQuestionDraft.forType('single_choice'),
+    _CaQuestionDraft.forType('essay'),
   ];
 
   @override
@@ -85,22 +96,9 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
     }
     if (_questions.isEmpty) issues.add('Add at least one question.');
     for (var i = 0; i < _questions.length; i++) {
-      final question = _questions[i];
-      if (question.prompt.text.trim().isEmpty) {
-        issues.add('Enter Question ${i + 1}.');
-        break;
-      }
-      if ((int.tryParse(question.marks.text.trim()) ?? 0) <= 0) {
-        issues.add('Enter valid marks for Question ${i + 1}.');
-        break;
-      }
-      if (question.type == 'single_choice') {
-        if (question.options.any((item) => item.text.trim().isEmpty)) {
-          issues.add('Complete all options for Question ${i + 1}.');
-          break;
-        }
-      } else if (question.answer.text.trim().isEmpty) {
-        issues.add('Enter the marking guide for Question ${i + 1}.');
+      final issue = _questions[i].firstIssue(i + 1);
+      if (issue != null) {
+        issues.add(issue);
         break;
       }
     }
@@ -184,19 +182,13 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
       }
       _questions
         ..clear()
-        ..add(_CaQuestionDraft.objective())
-        ..add(_CaQuestionDraft.essay());
+        ..add(_CaQuestionDraft.forType('single_choice'))
+        ..add(_CaQuestionDraft.forType('essay'));
     });
   }
 
   void _addQuestion(String type) {
-    setState(() {
-      _questions.add(
-        type == 'single_choice'
-            ? _CaQuestionDraft.objective()
-            : _CaQuestionDraft.essay(),
-      );
-    });
+    setState(() => _questions.add(_CaQuestionDraft.forType(type)));
   }
 
   void _removeQuestion(_CaQuestionDraft question) {
@@ -208,6 +200,40 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
       _questions.remove(question);
       question.dispose();
     });
+  }
+
+  Future<void> _uploadQuestionImage(_CaQuestionDraft draft) async {
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const [
+        'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg', 'tif', 'tiff', 'heic', 'heif',
+      ],
+      withData: true,
+    );
+    if (picked == null || picked.files.isEmpty) return;
+    final file = picked.files.first;
+    if (file.bytes == null) {
+      _showIssue('Could not read selected image.');
+      return;
+    }
+    setState(() => draft.imageUploading = true);
+    try {
+      final url = await _api.uploadFile(
+        bytes: file.bytes!,
+        fileName: file.name,
+        category: 'ca_question_image',
+      );
+      if (!mounted) return;
+      setState(() {
+        draft.imageUploading = false;
+        draft.imageFileName = file.name;
+        draft.imageFileUrl = url;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => draft.imageUploading = false);
+      _showIssue(error.toString());
+    }
   }
 
   @override
@@ -244,17 +270,17 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          Icons.quiz_outlined,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                        Icon(Icons.quiz_outlined, color: Theme.of(context).colorScheme.primary),
                         const SizedBox(width: 10),
-                        Text(
-                          'Continuous Assessment Questions',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w900,
-                              ),
+                        Expanded(
+                          child: Text(
+                            'Continuous Assessment Questions',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                ),
+                          ),
                         ),
+                        Chip(label: Text('$_totalMarks marks')),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -272,10 +298,7 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
                             ),
                             items: [
                               for (final course in _courses)
-                                DropdownMenuItem(
-                                  value: course.id,
-                                  child: Text(course.label),
-                                ),
+                                DropdownMenuItem(value: course.id, child: Text(course.label)),
                             ],
                             onChanged: (value) => setState(() => _courseId = value),
                           ),
@@ -310,52 +333,39 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
                           child: TextField(
                             controller: _duration,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Duration (min)',
-                            ),
+                            decoration: const InputDecoration(labelText: 'Duration (min)'),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 18),
-                    Row(
+                    Text(
+                      'Question Types',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
-                        Expanded(
-                          child: Text(
-                            'Questions',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w900,
-                                ),
+                        for (final format in _caFormats)
+                          OutlinedButton.icon(
+                            onPressed: () => _addQuestion(format.type),
+                            icon: Icon(format.icon),
+                            label: Text(format.title),
                           ),
-                        ),
-                        Chip(label: Text('Total: $_totalMarks marks')),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 16),
                     for (var i = 0; i < _questions.length; i++) ...[
                       _CaQuestionCard(
                         number: i + 1,
                         draft: _questions[i],
                         onRemove: () => _removeQuestion(_questions[i]),
+                        onUploadImage: () => _uploadQuestionImage(_questions[i]),
                       ),
                       const SizedBox(height: 10),
                     ],
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        OutlinedButton.icon(
-                          onPressed: () => _addQuestion('single_choice'),
-                          icon: const Icon(Icons.radio_button_checked_outlined),
-                          label: const Text('Add Objective'),
-                        ),
-                        OutlinedButton.icon(
-                          onPressed: () => _addQuestion('essay'),
-                          icon: const Icon(Icons.notes_outlined),
-                          label: const Text('Add Essay'),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
@@ -369,10 +379,7 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          Icons.calendar_month_outlined,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                        Icon(Icons.calendar_month_outlined, color: Theme.of(context).colorScheme.primary),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
@@ -382,9 +389,7 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
                                 ),
                           ),
                         ),
-                        Chip(
-                          label: Text('${_calendar.availableSlots.length} available'),
-                        ),
+                        Chip(label: Text('${_calendar.availableSlots.length} available')),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -462,9 +467,7 @@ class _CaSubmissionStatus extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '${assessment.courseCode} • ${assessment.caLabel}',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w900,
-                        ),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
                   ),
                 ),
                 Chip(label: Text(assessment.status.label)),
@@ -484,16 +487,11 @@ class _CaSubmissionStatus extends StatelessWidget {
             ),
             if (slot != null) ...[
               const SizedBox(height: 12),
-              Text(
-                slot.scheduleLabel,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
+              Text(slot.scheduleLabel, style: const TextStyle(fontWeight: FontWeight.w800)),
             ],
             if (request != null) ...[
               const SizedBox(height: 12),
-              Text(
-                'Requested: ${request.dateLabel} • ${request.startTime}–${request.endTime}',
-              ),
+              Text('Requested: ${request.dateLabel} • ${request.startTime}–${request.endTime}'),
               if (request.responseNote.isNotEmpty) ...[
                 const SizedBox(height: 6),
                 Text(request.responseNote),
@@ -517,11 +515,13 @@ class _CaQuestionCard extends StatefulWidget {
     required this.number,
     required this.draft,
     required this.onRemove,
+    required this.onUploadImage,
   });
 
   final int number;
   final _CaQuestionDraft draft;
   final VoidCallback onRemove;
+  final VoidCallback onUploadImage;
 
   @override
   State<_CaQuestionCard> createState() => _CaQuestionCardState();
@@ -541,30 +541,33 @@ class _CaQuestionCardState extends State<_CaQuestionCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Expanded(
-                child: Text(
-                  'Question ${widget.number}',
-                  style: const TextStyle(fontWeight: FontWeight.w900),
-                ),
-              ),
+              Text('Question ${widget.number}', style: const TextStyle(fontWeight: FontWeight.w900)),
               SizedBox(
-                width: 190,
+                width: 220,
                 child: DropdownButtonFormField<String>(
                   initialValue: draft.type,
-                  decoration: const InputDecoration(labelText: 'Type'),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'single_choice',
-                      child: Text('Single choice'),
-                    ),
-                    DropdownMenuItem(value: 'essay', child: Text('Essay')),
+                  decoration: const InputDecoration(labelText: 'Question type'),
+                  items: [
+                    for (final format in _caFormats)
+                      DropdownMenuItem(value: format.type, child: Text(format.title)),
                   ],
                   onChanged: (value) {
                     if (value == null) return;
-                    setState(() => draft.type = value);
+                    setState(() => draft.setType(value));
                   },
+                ),
+              ),
+              SizedBox(
+                width: 120,
+                child: TextField(
+                  controller: draft.marks,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Marks'),
                 ),
               ),
               IconButton(
@@ -582,120 +585,323 @@ class _CaQuestionCardState extends State<_CaQuestionCard> {
             decoration: const InputDecoration(labelText: 'Question'),
           ),
           const SizedBox(height: 10),
-          SizedBox(
-            width: 140,
-            child: TextField(
-              controller: draft.marks,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Marks'),
+          _fieldsForType(draft),
+        ],
+      ),
+    );
+  }
+
+  Widget _fieldsForType(_CaQuestionDraft draft) {
+    if (draft.type == 'single_choice' || draft.type == 'multiple_choice') {
+      final multiple = draft.type == 'multiple_choice';
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < draft.options.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 46,
+                    child: multiple
+                        ? Checkbox(
+                            value: draft.correctOptions.contains(String.fromCharCode(65 + i)),
+                            onChanged: (value) {
+                              final key = String.fromCharCode(65 + i);
+                              setState(() {
+                                if (value == true) {
+                                  draft.correctOptions.add(key);
+                                } else {
+                                  draft.correctOptions.remove(key);
+                                }
+                              });
+                            },
+                          )
+                        : Radio<String>(
+                            value: String.fromCharCode(65 + i),
+                            groupValue: draft.singleCorrect,
+                            onChanged: (value) {
+                              if (value != null) setState(() => draft.singleCorrect = value);
+                            },
+                          ),
+                  ),
+                  SizedBox(width: 30, child: Text('${String.fromCharCode(65 + i)}.')),
+                  Expanded(
+                    child: TextField(
+                      controller: draft.options[i],
+                      decoration: const InputDecoration(labelText: 'Answer option'),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          if (draft.type == 'single_choice') ...[
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (var i = 0; i < draft.options.length; i++)
+          if (multiple)
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: draft.partialMarking,
+              onChanged: (value) => setState(() => draft.partialMarking = value),
+              title: const Text('Allow partial marking'),
+            ),
+        ],
+      );
+    }
+
+    if (draft.type == 'drag_drop') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < draft.pairs.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
                   SizedBox(
                     width: 260,
                     child: TextField(
-                      controller: draft.options[i],
-                      decoration: InputDecoration(
-                        labelText: 'Option ${String.fromCharCode(65 + i)}',
-                      ),
+                      controller: draft.pairs[i].left,
+                      decoration: InputDecoration(labelText: 'Pair ${i + 1} left item'),
                     ),
                   ),
-                SizedBox(
-                  width: 190,
-                  child: DropdownButtonFormField<String>(
-                    initialValue: draft.correctOption,
-                    decoration: const InputDecoration(labelText: 'Correct option'),
-                    items: const [
-                      DropdownMenuItem(value: 'A', child: Text('A')),
-                      DropdownMenuItem(value: 'B', child: Text('B')),
-                      DropdownMenuItem(value: 'C', child: Text('C')),
-                      DropdownMenuItem(value: 'D', child: Text('D')),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) setState(() => draft.correctOption = value);
-                    },
+                  SizedBox(
+                    width: 260,
+                    child: TextField(
+                      controller: draft.pairs[i].right,
+                      decoration: const InputDecoration(labelText: 'Correct match'),
+                    ),
                   ),
-                ),
-              ],
+                  IconButton(
+                    onPressed: draft.pairs.length <= 2
+                        ? null
+                        : () => setState(() => draft.removePair(i)),
+                    icon: const Icon(Icons.delete_outline),
+                  ),
+                ],
+              ),
             ),
-          ] else
-            TextField(
-              controller: draft.answer,
-              minLines: 2,
-              maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Marking guide / answer'),
-            ),
+          OutlinedButton.icon(
+            onPressed: () => setState(draft.addPair),
+            icon: const Icon(Icons.add_outlined),
+            label: const Text('Add matching pair'),
+          ),
         ],
+      );
+    }
+
+    if (draft.type == 'image_question') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FilledButton.tonalIcon(
+            onPressed: draft.imageUploading ? null : widget.onUploadImage,
+            icon: draft.imageUploading
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.image_outlined),
+            label: Text(draft.imageFileName.isEmpty ? 'Upload question image' : 'Change image'),
+          ),
+          if (draft.imageFileName.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text('Uploaded: ${draft.imageFileName}'),
+          ],
+          const SizedBox(height: 10),
+          TextField(
+            controller: draft.answer,
+            minLines: 2,
+            maxLines: 5,
+            decoration: const InputDecoration(labelText: 'Theory answer marking guide'),
+          ),
+        ],
+      );
+    }
+
+    if (draft.type == 'essay') {
+      return Column(
+        children: [
+          TextField(
+            controller: draft.answer,
+            minLines: 3,
+            maxLines: 6,
+            decoration: const InputDecoration(labelText: 'Marking guide / expected answer'),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: draft.rubric,
+            minLines: 2,
+            maxLines: 4,
+            decoration: const InputDecoration(labelText: 'Rubric points'),
+          ),
+        ],
+      );
+    }
+
+    return TextField(
+      controller: draft.answer,
+      minLines: 2,
+      maxLines: 5,
+      decoration: InputDecoration(
+        labelText: draft.type == 'fill_blank'
+            ? 'Correct / accepted answers'
+            : 'Expected file / practical marking guide',
+        helperText: draft.type == 'fill_blank' ? 'Separate alternatives with semicolon or new line.' : null,
       ),
     );
   }
 }
 
 class _CaQuestionDraft {
-  _CaQuestionDraft({
-    required this.type,
-    required String prompt,
-    required String marks,
-    required String answer,
-    required List<String> options,
-    this.correctOption = 'A',
-  })  : prompt = TextEditingController(text: prompt),
-        marks = TextEditingController(text: marks),
-        answer = TextEditingController(text: answer),
-        options = [for (final option in options) TextEditingController(text: option)];
+  _CaQuestionDraft._(this.type)
+      : prompt = TextEditingController(),
+        marks = TextEditingController(text: '2'),
+        answer = TextEditingController(),
+        rubric = TextEditingController();
 
-  factory _CaQuestionDraft.objective() => _CaQuestionDraft(
-        type: 'single_choice',
-        prompt: 'Which statement best describes a stack data structure?',
-        marks: '2',
-        answer: '',
-        options: const [
-          'It follows LIFO ordering',
-          'It follows FIFO ordering',
-          'It stores only numbers',
-          'It cannot remove items',
-        ],
-      );
-
-  factory _CaQuestionDraft.essay() => _CaQuestionDraft(
-        type: 'essay',
-        prompt: 'Explain one practical application of a queue data structure.',
-        marks: '8',
-        answer: 'Award marks for a valid queue application and a correct FIFO explanation.',
-        options: const ['', '', '', ''],
-      );
+  factory _CaQuestionDraft.forType(String type) {
+    final item = _CaQuestionDraft._(type);
+    item.setType(type, seed: true);
+    return item;
+  }
 
   String type;
   final TextEditingController prompt;
   final TextEditingController marks;
   final TextEditingController answer;
-  final List<TextEditingController> options;
-  String correctOption;
+  final TextEditingController rubric;
+  final List<TextEditingController> options = [];
+  final Set<String> correctOptions = {};
+  final List<_CaPairDraft> pairs = [];
+  String singleCorrect = 'A';
+  bool partialMarking = false;
+  bool imageUploading = false;
+  String imageFileName = '';
+  String imageFileUrl = '';
+
+  void setType(String value, {bool seed = false}) {
+    type = value;
+    if (type == 'single_choice' || type == 'multiple_choice') {
+      if (options.isEmpty) {
+        options.addAll(List.generate(4, (_) => TextEditingController()));
+      }
+      if (type == 'multiple_choice' && correctOptions.isEmpty) {
+        correctOptions.addAll(const ['A', 'B']);
+      }
+    }
+    if (type == 'drag_drop' && pairs.isEmpty) {
+      pairs.add(_CaPairDraft());
+      pairs.add(_CaPairDraft());
+    }
+    if (!seed) return;
+    switch (type) {
+      case 'single_choice':
+        prompt.text = 'Which statement best describes a stack data structure?';
+        options[0].text = 'It follows LIFO ordering';
+        options[1].text = 'It follows FIFO ordering';
+        options[2].text = 'It stores only numbers';
+        options[3].text = 'It cannot remove items';
+        singleCorrect = 'A';
+        break;
+      case 'multiple_choice':
+        prompt.text = 'Select all linear data structures.';
+        options[0].text = 'Array';
+        options[1].text = 'Queue';
+        options[2].text = 'Tree';
+        options[3].text = 'Graph';
+        break;
+      case 'fill_blank':
+        prompt.text = 'A queue follows the ____ principle.';
+        answer.text = 'FIFO; first in first out';
+        break;
+      case 'essay':
+        prompt.text = 'Explain one practical application of a queue data structure.';
+        marks.text = '8';
+        answer.text = 'Award marks for a valid queue application and a correct FIFO explanation.';
+        rubric.text = 'Application 4 marks; explanation 4 marks.';
+        break;
+      case 'drag_drop':
+        prompt.text = 'Match each structure to its ordering rule.';
+        pairs[0].left.text = 'Stack';
+        pairs[0].right.text = 'LIFO';
+        pairs[1].left.text = 'Queue';
+        pairs[1].right.text = 'FIFO';
+        break;
+      case 'image_question':
+        prompt.text = 'Study the uploaded diagram and answer the question.';
+        answer.text = 'Award marks using the diagram evidence and expected concept.';
+        break;
+      case 'file_upload':
+        prompt.text = 'Upload the requested practical solution file.';
+        answer.text = 'Check correctness, completeness, readability and explanation.';
+        break;
+    }
+  }
+
+  void addPair() => pairs.add(_CaPairDraft());
+
+  void removePair(int index) {
+    final pair = pairs.removeAt(index);
+    pair.dispose();
+  }
+
+  String? firstIssue(int number) {
+    if (prompt.text.trim().isEmpty) return 'Enter Question $number.';
+    if ((int.tryParse(marks.text.trim()) ?? 0) <= 0) {
+      return 'Enter valid marks for Question $number.';
+    }
+    if (type == 'single_choice' || type == 'multiple_choice') {
+      if (options.any((item) => item.text.trim().isEmpty)) {
+        return 'Complete all answer options for Question $number.';
+      }
+      if (type == 'multiple_choice' && correctOptions.isEmpty) {
+        return 'Select at least one correct answer for Question $number.';
+      }
+    } else if (type == 'drag_drop') {
+      if (pairs.length < 2 || pairs.any((pair) => !pair.complete)) {
+        return 'Complete at least two matching pairs for Question $number.';
+      }
+    } else if (type == 'image_question') {
+      if (imageFileName.isEmpty) return 'Upload the image for Question $number.';
+      if (answer.text.trim().isEmpty) return 'Enter the marking guide for Question $number.';
+    } else if (answer.text.trim().isEmpty) {
+      return 'Enter the answer or marking guide for Question $number.';
+    }
+    return null;
+  }
 
   CaQuestionSnapshot snapshot() {
     final marksValue = int.tryParse(marks.text.trim()) ?? 0;
-    if (type == 'single_choice') {
-      final index = 'ABCD'.indexOf(correctOption);
-      final correct = index >= 0 ? options[index].text.trim() : '';
-      return CaQuestionSnapshot(
-        type: type,
-        prompt: prompt.text.trim(),
-        marks: marksValue,
-        answer: '$correctOption: $correct',
-        options: [for (final option in options) option.text.trim()],
-      );
+    final optionTexts = [for (final option in options) option.text.trim()];
+    final correct = type == 'single_choice'
+        ? <String>[singleCorrect]
+        : correctOptions.toList()..sort();
+    String answerValue = answer.text.trim();
+    if (type == 'single_choice' && options.isNotEmpty) {
+      final index = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(singleCorrect);
+      if (index >= 0 && index < options.length) {
+        answerValue = '$singleCorrect: ${options[index].text.trim()}';
+      }
+    } else if (type == 'multiple_choice') {
+      answerValue = correct.join('; ');
+    } else if (type == 'drag_drop') {
+      answerValue = pairs.where((pair) => pair.complete).map((pair) => '${pair.left.text.trim()}→${pair.right.text.trim()}').join('; ');
     }
     return CaQuestionSnapshot(
       type: type,
       prompt: prompt.text.trim(),
       marks: marksValue,
-      answer: answer.text.trim(),
+      answer: answerValue,
+      options: optionTexts,
+      correctOptions: correct,
+      partialMarking: partialMarking,
+      rubric: rubric.text.trim(),
+      matchPairs: [
+        for (final pair in pairs)
+          if (pair.complete)
+            CaMatchPair(left: pair.left.text.trim(), right: pair.right.text.trim()),
+      ],
+      imageFileName: imageFileName,
+      imageFileUrl: imageFileUrl,
     );
   }
 
@@ -703,10 +909,36 @@ class _CaQuestionDraft {
     prompt.dispose();
     marks.dispose();
     answer.dispose();
+    rubric.dispose();
     for (final option in options) {
       option.dispose();
     }
+    for (final pair in pairs) {
+      pair.dispose();
+    }
   }
+}
+
+class _CaPairDraft {
+  _CaPairDraft()
+      : left = TextEditingController(),
+        right = TextEditingController();
+
+  final TextEditingController left;
+  final TextEditingController right;
+  bool get complete => left.text.trim().isNotEmpty && right.text.trim().isNotEmpty;
+
+  void dispose() {
+    left.dispose();
+    right.dispose();
+  }
+}
+
+class _CaFormat {
+  const _CaFormat(this.type, this.title, this.icon);
+  final String type;
+  final String title;
+  final IconData icon;
 }
 
 class _RequestedSlot {
