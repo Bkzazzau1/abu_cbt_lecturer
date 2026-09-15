@@ -52,6 +52,7 @@ class AcademicCourseResult {
     required this.creditUnits,
     required this.originalScore,
     required this.levelAdjustment,
+    this.isCarryover = false,
   });
 
   final String courseCode;
@@ -59,6 +60,7 @@ class AcademicCourseResult {
   final int creditUnits;
   final int originalScore;
   final int levelAdjustment;
+  final bool isCarryover;
 
   int get finalScore => (originalScore + levelAdjustment).clamp(0, 100).toInt();
   String get grade => AbuUndergraduateGradingPolicy.letterGrade(finalScore);
@@ -115,6 +117,9 @@ class StudentAcademicStanding {
       : cumulativeCreditPoints / cumulativeRegisteredUnits;
 
   int get failedCourses => currentResults.where((item) => item.failed).length;
+
+  int get carryoverAttempts =>
+      currentResults.where((item) => item.isCarryover).length;
 
   bool get belowGoodStanding =>
       cgpa < AbuUndergraduateGradingPolicy.classifiedGoodStandingCgpa;
@@ -210,7 +215,7 @@ class ExamOfficerAcademicStandingState extends ChangeNotifier {
     required String semester,
   }) {
     final previous = _previousSummary(student, studentIndex);
-    final results = [
+    final results = <AcademicCourseResult>[
       for (var courseIndex = 0; courseIndex < courses.length; courseIndex++)
         AcademicCourseResult(
           courseCode: courses[courseIndex].courseCode,
@@ -225,6 +230,28 @@ class ExamOfficerAcademicStandingState extends ChangeNotifier {
           levelAdjustment: adjustment,
         ),
     ];
+
+    for (var i = 0; i < student.carryoverCourseCodes.length; i++) {
+      final carryCode = student.carryoverCourseCodes[i];
+      final course = _registry.registrationFor(carryCode);
+      if (course == null) continue;
+      final carryAdjustment = _levelResults.boardFor(course.level).adjustment;
+      results.add(
+        AcademicCourseResult(
+          courseCode: course.courseCode,
+          courseTitle: course.courseTitle,
+          creditUnits: creditUnitsFor(course.courseCode),
+          originalScore: _scoreFor(
+            student: student,
+            studentIndex: studentIndex,
+            course: course,
+            courseIndex: courses.length + i,
+          ),
+          levelAdjustment: carryAdjustment,
+          isCarryover: true,
+        ),
+      );
+    }
 
     return StudentAcademicStanding(
       matricNumber: student.matricNumber,
