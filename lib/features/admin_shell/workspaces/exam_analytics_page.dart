@@ -8,6 +8,12 @@ class ExamAnalyticsPage extends StatelessWidget {
     required this.audience,
   });
 
+  const ExamAnalyticsPage.examOfficer({super.key})
+      : audience = ExamAnalyticsAudience.examOfficer;
+
+  const ExamAnalyticsPage.hod({super.key})
+      : audience = ExamAnalyticsAudience.hod;
+
   final ExamAnalyticsAudience audience;
 
   @override
