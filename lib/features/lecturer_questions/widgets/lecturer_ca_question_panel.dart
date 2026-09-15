@@ -32,6 +32,7 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
   final TextEditingController _duration = TextEditingController(text: '30');
 
   bool _loading = true;
+  bool _startFreshCa = false;
   int? _courseId;
   String _caLabel = 'CA 1';
   String? _activeHallRequestId;
@@ -82,8 +83,19 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
 
   ExamHallAvailabilityRequest? _activeHallRequest() {
     final id = _activeHallRequestId;
-    if (id == null) return null;
-    return _hallState.requestById(id);
+    if (id != null) {
+      return _hallState.requestById(id);
+    }
+    if (_startFreshCa) return null;
+
+    final lecturerName = AuthSession.instance.session?.name ?? 'Lecturer';
+    for (final request in _hallState.requests) {
+      if (request.requestType == HallTimeRequestType.continuousAssessment &&
+          request.caPlan?.lecturerName == lecturerName) {
+        return request;
+      }
+    }
+    return null;
   }
 
   CaAssessmentRecord? _scheduledAssessment(
@@ -151,7 +163,10 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
         startTime: preferred.startTime,
         endTime: preferred.endTime,
       );
-      setState(() => _activeHallRequestId = request.id);
+      setState(() {
+        _activeHallRequestId = request.id;
+        _startFreshCa = false;
+      });
     } catch (error) {
       _showIssue(error.toString().replaceFirst('Bad state: ', ''));
     }
@@ -175,7 +190,10 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
         startTime: preferred.startTime,
         endTime: preferred.endTime,
       );
-      setState(() => _activeHallRequestId = request.id);
+      setState(() {
+        _activeHallRequestId = request.id;
+        _startFreshCa = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('New CA hall/time request sent to ICT.'),
@@ -189,6 +207,7 @@ class _LecturerCaQuestionPanelState extends State<LecturerCaQuestionPanel> {
   void _newCa() {
     setState(() {
       _activeHallRequestId = null;
+      _startFreshCa = true;
       _caLabel = 'CA 1';
       _title.text = 'CA 1 CBT';
       _duration.text = '30';
