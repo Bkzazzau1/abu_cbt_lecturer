@@ -131,9 +131,15 @@ class LecturerGradebookPdfService {
           'Faculty of Physical Sciences',
           style: pw.TextStyle(fontSize: 10.5, fontWeight: pw.FontWeight.bold),
         ),
-        pw.Text('Department of Computer Science', style: const pw.TextStyle(fontSize: 10)),
+        pw.Text(
+          'Department of Computer Science',
+          style: const pw.TextStyle(fontSize: 10),
+        ),
         pw.SizedBox(height: 9),
-        pw.Text(title, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+        pw.Text(
+          title,
+          style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+        ),
       ],
     );
   }
@@ -162,7 +168,10 @@ class LecturerGradebookPdfService {
     return pw.RichText(
       text: pw.TextSpan(
         children: [
-          pw.TextSpan(text: '$label: ', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          pw.TextSpan(
+            text: '$label: ',
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
           pw.TextSpan(text: value),
         ],
       ),
@@ -201,6 +210,7 @@ class LecturerGradebookPdfService {
       switch (kind) {
         case LecturerGradebookPdfKind.matricList:
           rows.add(['${index + 1}', student.matricNumber]);
+          break;
         case LecturerGradebookPdfKind.gradeSheet:
           rows.add([
             '${index + 1}',
@@ -211,8 +221,10 @@ class LecturerGradebookPdfService {
             student.complete ? '${student.total}' : '—',
             student.gradeFor(course),
           ]);
+          break;
         case LecturerGradebookPdfKind.blankScoreSheet:
           rows.add(['${index + 1}', student.matricNumber, '', '', '', '']);
+          break;
       }
     }
 
@@ -227,7 +239,10 @@ class LecturerGradebookPdfService {
                 padding: const pw.EdgeInsets.all(6),
                 child: pw.Text(
                   header,
-                  style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold),
+                  style: pw.TextStyle(
+                    fontSize: 8.5,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
                 ),
               ),
           ],
@@ -238,7 +253,10 @@ class LecturerGradebookPdfService {
               for (final value in row)
                 pw.Padding(
                   padding: const pw.EdgeInsets.all(6),
-                  child: pw.Text(value, style: const pw.TextStyle(fontSize: 8.5)),
+                  child: pw.Text(
+                    value,
+                    style: const pw.TextStyle(fontSize: 8.5),
+                  ),
                 ),
             ],
           ),

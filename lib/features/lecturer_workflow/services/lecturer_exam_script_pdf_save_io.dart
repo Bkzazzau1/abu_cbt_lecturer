@@ -5,7 +5,7 @@ import 'package:file_picker/file_picker.dart';
 
 Future<void> saveExamScriptPdf(Uint8List bytes, String filename) async {
   final path = await FilePicker.platform.saveFile(
-    dialogTitle: 'Save exam script PDF',
+    dialogTitle: 'Save PDF',
     fileName: filename,
     type: FileType.custom,
     allowedExtensions: const ['pdf'],

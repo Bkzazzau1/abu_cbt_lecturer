@@ -12,7 +12,8 @@ class LecturerGradebookPanel extends StatefulWidget {
 
 class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
   final LecturerGradebookState _state = LecturerGradebookState.instance;
-  final LecturerGradebookPdfService _pdfService = const LecturerGradebookPdfService();
+  final LecturerGradebookPdfService _pdfService =
+      const LecturerGradebookPdfService();
   final TextEditingController _searchController = TextEditingController();
 
   String _courseCode = 'CSC 305';
@@ -33,7 +34,7 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
       builder: (context, _) {
         final course = _state.course(_courseCode);
         final allStudents = _state.studentsFor(_courseCode);
-        final visibleStudents = _visibleStudents(allStudents, course);
+        final visibleStudents = _visibleStudents(allStudents);
         final complete = _state.completeCount(_courseCode);
         final missing = allStudents.length - complete;
         final distribution = _state.gradeDistribution(_courseCode);
@@ -57,9 +58,10 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                         Expanded(
                           child: Text(
                             'Students & Scores',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w900,
-                                ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w900),
                           ),
                         ),
                         _StatusChip(
@@ -115,9 +117,10 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                     const SizedBox(height: 14),
                     Text(
                       'Teaching team',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w900,
-                          ),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w900),
                     ),
                     const SizedBox(height: 8),
                     Wrap(
@@ -127,7 +130,9 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                         for (final lecturer in course.lecturers)
                           Chip(
                             avatar: const Icon(Icons.person_outline, size: 18),
-                            label: Text('${lecturer.role} • ${lecturer.name}'),
+                            label: Text(
+                              '${lecturer.role} • ${lecturer.name}',
+                            ),
                           ),
                       ],
                     ),
@@ -146,16 +151,21 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                       spacing: 10,
                       runSpacing: 10,
                       children: [
-                        _Metric(label: 'Students', value: '${allStudents.length}'),
+                        _Metric(
+                          label: 'Students',
+                          value: '${allStudents.length}',
+                        ),
                         _Metric(label: 'Complete', value: '$complete'),
                         _Metric(label: 'Missing', value: '$missing'),
                         _Metric(
                           label: 'Class Average',
-                          value: '${_state.classAverage(_courseCode).toStringAsFixed(1)}%',
+                          value:
+                              '${_state.classAverage(_courseCode).toStringAsFixed(1)}%',
                         ),
                         _Metric(
                           label: 'Pass Rate',
-                          value: '${_state.passRate(_courseCode).toStringAsFixed(1)}%',
+                          value:
+                              '${_state.passRate(_courseCode).toStringAsFixed(1)}%',
                         ),
                       ],
                     ),
@@ -171,7 +181,8 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                                     () => _pdfService.download(
                                       course: course,
                                       students: allStudents,
-                                      kind: LecturerGradebookPdfKind.matricList,
+                                      kind:
+                                          LecturerGradebookPdfKind.matricList,
                                     ),
                                   ),
                           icon: const Icon(Icons.download_outlined),
@@ -184,7 +195,8 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                                     () => _pdfService.printSheet(
                                       course: course,
                                       students: allStudents,
-                                      kind: LecturerGradebookPdfKind.matricList,
+                                      kind:
+                                          LecturerGradebookPdfKind.matricList,
                                     ),
                                   ),
                           icon: const Icon(Icons.print_outlined),
@@ -197,7 +209,8 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                                     () => _pdfService.download(
                                       course: course,
                                       students: allStudents,
-                                      kind: LecturerGradebookPdfKind.gradeSheet,
+                                      kind:
+                                          LecturerGradebookPdfKind.gradeSheet,
                                     ),
                                   ),
                           icon: const Icon(Icons.picture_as_pdf_outlined),
@@ -210,7 +223,8 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                                     () => _pdfService.printSheet(
                                       course: course,
                                       students: allStudents,
-                                      kind: LecturerGradebookPdfKind.gradeSheet,
+                                      kind:
+                                          LecturerGradebookPdfKind.gradeSheet,
                                     ),
                                   ),
                           icon: const Icon(Icons.print_outlined),
@@ -223,10 +237,11 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                                     () => _pdfService.printSheet(
                                       course: course,
                                       students: allStudents,
-                                      kind: LecturerGradebookPdfKind.blankScoreSheet,
+                                      kind: LecturerGradebookPdfKind
+                                          .blankScoreSheet,
                                     ),
                                   ),
-                          icon: const Icon(Icons.edit_document),
+                          icon: const Icon(Icons.note_alt_outlined),
                           label: const Text('Print Blank Score Sheet'),
                         ),
                         FilledButton.icon(
@@ -268,8 +283,9 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                               hintText: 'Name or matric number',
                               prefixIcon: Icon(Icons.search),
                             ),
-                            onChanged: (value) =>
-                                setState(() => _query = value.trim().toLowerCase()),
+                            onChanged: (value) => setState(
+                              () => _query = value.trim().toLowerCase(),
+                            ),
                           ),
                         ),
                         SizedBox(
@@ -299,12 +315,17 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                               ),
                             ],
                             onChanged: (value) {
-                              if (value != null) setState(() => _sort = value);
+                              if (value != null) {
+                                setState(() => _sort = value);
+                              }
                             },
                           ),
                         ),
-                        for (final grade in const ['A', 'B', 'C', 'D', 'E', 'F'])
-                          _InfoChip(label: '$grade ${distribution[grade] ?? 0}'),
+                        for (final grade
+                            in const ['A', 'B', 'C', 'D', 'E', 'F'])
+                          _InfoChip(
+                            label: '$grade ${distribution[grade] ?? 0}',
+                          ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -314,10 +335,18 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                         columns: [
                           const DataColumn(label: Text('Student')),
                           const DataColumn(label: Text('Matric Number')),
-                          DataColumn(label: Text('CA 1 /${course.ca1Max}')),
-                          DataColumn(label: Text('CA 2 /${course.ca2Max}')),
-                          DataColumn(label: Text('Exam /${course.examMax}')),
-                          DataColumn(label: Text('Total /${course.totalMax}')),
+                          DataColumn(
+                            label: Text('CA 1 /${course.ca1Max}'),
+                          ),
+                          DataColumn(
+                            label: Text('CA 2 /${course.ca2Max}'),
+                          ),
+                          DataColumn(
+                            label: Text('Exam /${course.examMax}'),
+                          ),
+                          DataColumn(
+                            label: Text('Total /${course.totalMax}'),
+                          ),
                           const DataColumn(label: Text('Grade')),
                           const DataColumn(label: Text('Updated By')),
                         ],
@@ -331,14 +360,18 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                                     child: Text(
                                       student.studentName,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontWeight: FontWeight.w800),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                      ),
                                     ),
                                   ),
                                 ),
                                 DataCell(Text(student.matricNumber)),
                                 DataCell(
                                   _ScoreField(
-                                    key: ValueKey('${student.courseCode}-${student.matricNumber}-ca1'),
+                                    key: ValueKey(
+                                      '${student.courseCode}-${student.matricNumber}-ca1',
+                                    ),
                                     value: student.ca1,
                                     max: course.ca1Max,
                                     locked: course.resultsSubmitted,
@@ -351,7 +384,9 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                                 ),
                                 DataCell(
                                   _ScoreField(
-                                    key: ValueKey('${student.courseCode}-${student.matricNumber}-ca2'),
+                                    key: ValueKey(
+                                      '${student.courseCode}-${student.matricNumber}-ca2',
+                                    ),
                                     value: student.ca2,
                                     max: course.ca2Max,
                                     locked: course.resultsSubmitted,
@@ -365,24 +400,34 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
                                 DataCell(
                                   Text(
                                     student.exam?.toString() ?? '—',
-                                    style: const TextStyle(fontWeight: FontWeight.w800),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
                                 ),
                                 DataCell(
                                   Text(
-                                    student.complete ? '${student.total}' : '—',
-                                    style: const TextStyle(fontWeight: FontWeight.w900),
+                                    student.complete
+                                        ? '${student.total}'
+                                        : '—',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                    ),
                                   ),
                                 ),
                                 DataCell(
                                   Text(
                                     student.gradeFor(course),
-                                    style: const TextStyle(fontWeight: FontWeight.w900),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                    ),
                                   ),
                                 ),
                                 DataCell(
                                   Text(
-                                    student.lastUpdatedBy.isEmpty ? '—' : student.lastUpdatedBy,
+                                    student.lastUpdatedBy.isEmpty
+                                        ? '—'
+                                        : student.lastUpdatedBy,
                                   ),
                                 ),
                               ],
@@ -402,7 +447,6 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
 
   List<LecturerGradebookStudent> _visibleStudents(
     List<LecturerGradebookStudent> students,
-    LecturerGradebookCourse course,
   ) {
     final filtered = students.where((student) {
       if (_query.isEmpty) return true;
@@ -413,12 +457,17 @@ class _LecturerGradebookPanelState extends State<LecturerGradebookPanel> {
     switch (_sort) {
       case 'Name':
         filtered.sort((a, b) => a.studentName.compareTo(b.studentName));
+        break;
       case 'Highest Total':
         filtered.sort((a, b) => b.total.compareTo(a.total));
+        break;
       case 'Lowest Total':
         filtered.sort((a, b) => a.total.compareTo(b.total));
+        break;
       default:
-        filtered.sort((a, b) => a.matricNumber.compareTo(b.matricNumber));
+        filtered.sort(
+          (a, b) => a.matricNumber.compareTo(b.matricNumber),
+        );
     }
     return filtered;
   }
@@ -488,7 +537,9 @@ class _ScoreFieldState extends State<_ScoreField> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.value?.toString() ?? '');
+    _controller = TextEditingController(
+      text: widget.value?.toString() ?? '',
+    );
     _focusNode = FocusNode()..addListener(_handleFocus);
   }
 
@@ -517,9 +568,13 @@ class _ScoreFieldState extends State<_ScoreField> {
     if (widget.locked) return;
     final raw = _controller.text.trim();
     final parsed = raw.isEmpty ? null : int.tryParse(raw);
-    final normalized = parsed == null ? null : parsed.clamp(0, widget.max).toInt();
+    final normalized = parsed == null
+        ? null
+        : parsed.clamp(0, widget.max).toInt();
     final normalizedText = normalized?.toString() ?? '';
-    if (_controller.text != normalizedText) _controller.text = normalizedText;
+    if (_controller.text != normalizedText) {
+      _controller.text = normalizedText;
+    }
     if (normalized != widget.value) widget.onChanged(normalized);
   }
 
@@ -573,7 +628,10 @@ class _InfoChip extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+        child: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
       ),
     );
   }
