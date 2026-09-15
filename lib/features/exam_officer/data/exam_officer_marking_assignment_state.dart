@@ -177,6 +177,7 @@ class ExamOfficerMarkingAssignmentState extends ChangeNotifier {
     assign('MTH 201', ['Dr. Bashir Mohammed']);
     assign('CSC 305', ['Dr. Amina Bello', 'Dr. Yusuf Abdullahi']);
     assign('CSC 307', ['Dr. Grace Adamu']);
+    assign('CSC 309', ['Dr. Amina Bello']);
     assign('CSC 411', ['Dr. Kabiru Umar']);
     assign('CSC 413', ['Dr. Sani Bello']);
   }
