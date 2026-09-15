@@ -469,16 +469,23 @@ class _IctHallTimeApprovalPanelState extends State<IctHallTimeApprovalPanel> {
         SizedBox(
           width: 210,
           child: DropdownButtonFormField<String>(
-            value: _hallFilter,
+            initialValue: _hallFilter,
+            isExpanded: true,
             decoration: const InputDecoration(
               labelText: 'Hall',
               isDense: true,
               prefixIcon: Icon(Icons.meeting_room_outlined),
             ),
             items: [
-              const DropdownMenuItem(value: 'all', child: Text('All halls')),
+              const DropdownMenuItem(
+                value: 'all',
+                child: Text('All halls', overflow: TextOverflow.ellipsis),
+              ),
               for (final hall in ExamHallAvailabilityState.halls)
-                DropdownMenuItem(value: hall.id, child: Text(hall.name)),
+                DropdownMenuItem(
+                  value: hall.id,
+                  child: Text(hall.name, overflow: TextOverflow.ellipsis),
+                ),
             ],
             onChanged: (value) {
               if (value != null) setState(() => _hallFilter = value);
@@ -522,7 +529,7 @@ class _IctHallTimeApprovalPanelState extends State<IctHallTimeApprovalPanel> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: conflict ? scheme.errorContainer.withOpacity(0.25) : null,
+        color: conflict ? scheme.errorContainer.withValues(alpha: 0.25) : null,
         border: Border.all(
           color: conflict ? scheme.error : scheme.outlineVariant,
           width: conflict ? 1.5 : 1,

@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 import '../../lecturer_workflow/data/cbt_calendar_state.dart';
-import 'exam_officer_academic_registry.dart';
 import 'exam_officer_workflow_state.dart';
 
 class ExamInvigilatorStaff {
