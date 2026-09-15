@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../core/auth/auth_session.dart';
 import 'workspaces/exam_analytics_panel.dart';
+import 'workspaces/exam_management_panel.dart';
 import 'workspaces/hod_academic_resources_panel.dart';
 import 'workspaces/hod_department_overview_panel.dart';
-import 'workspaces/hod_exam_oversight_panel.dart';
 import 'workspaces/hod_level_results_panel.dart';
 import 'workspaces/hod_malpractice_cases_panel.dart';
+import 'workspaces/hod_staff_appointments_panel.dart';
+import 'workspaces/moderator_question_review_panel.dart';
 
 class HodSupervisoryShell extends StatefulWidget {
   const HodSupervisoryShell({super.key});
@@ -20,9 +22,10 @@ class _HodSupervisoryShellState extends State<HodSupervisoryShell> {
 
   static const _pages = [
     _HodPage('Department Overview', Icons.dashboard_outlined),
-    _HodPage('Academic Resources', Icons.school_outlined),
-    _HodPage('Exam Oversight', Icons.fact_check_outlined),
-    _HodPage('Moderation Oversight', Icons.rule_folder_outlined),
+    _HodPage('Staff & Appointments', Icons.badge_outlined),
+    _HodPage('Academic Register', Icons.school_outlined),
+    _HodPage('Chief Exam Operations', Icons.assignment_turned_in_outlined),
+    _HodPage('Question & Moderation', Icons.rule_folder_outlined),
     _HodPage('Malpractice Cases', Icons.gavel_outlined),
     _HodPage('Results', Icons.workspace_premium_outlined),
     _HodPage('Department Analytics', Icons.analytics_outlined),
@@ -87,16 +90,20 @@ class _HodSupervisoryShellState extends State<HodSupervisoryShell> {
       case 0:
         return const HodDepartmentOverviewPanel();
       case 1:
-        return const HodAcademicResourcesPanel();
+        return const HodStaffAppointmentsPanel();
       case 2:
-        return const HodExamOversightPanel();
+        return const HodAcademicResourcesPanel();
       case 3:
-        return const HodExamOversightPanel(mode: HodExamOversightMode.moderation);
+        return const ExamManagementPanel();
       case 4:
-        return const HodMalpracticeCasesPanel();
+        return const ModeratorQuestionReviewPanel(
+          mode: QuestionReviewMode.examOfficer,
+        );
       case 5:
-        return const HodLevelResultsPanel();
+        return const HodMalpracticeCasesPanel();
       case 6:
+        return const HodLevelResultsPanel();
+      case 7:
         return const ExamAnalyticsPanel(audience: ExamAnalyticsAudience.hod);
       default:
         return const HodDepartmentOverviewPanel();
@@ -136,7 +143,7 @@ class _HodNavigation extends StatelessWidget {
                   'HoD Workspace',
                   style: TextStyle(fontWeight: FontWeight.w900),
                 ),
-                subtitle: const Text('Department academic supervision'),
+                subtitle: const Text('Chief Exam Officer • Department Head'),
                 trailing: IconButton(
                   tooltip: 'Sign out',
                   onPressed: onLogout,
@@ -151,7 +158,7 @@ class _HodNavigation extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Text(
-                  'Chief Exam Officer • supervisory access\nOperational exam actions remain with the Exam Officer.',
+                  'Chief Exam Officer authority\nCreates Lecturer, Moderator and Exam Officer accounts; appoints course lecturers/moderators; delegates routine exam operations but may intervene directly.',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
