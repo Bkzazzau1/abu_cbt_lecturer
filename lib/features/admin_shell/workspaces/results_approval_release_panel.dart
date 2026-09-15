@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/auth/auth_session.dart';
+import '../../../models/admin_role.dart';
 import '../../exam_workflow/data/exam_results_api.dart';
 import 'exam_officer_academic_standing_panel.dart';
 import 'exam_officer_level_results_panel.dart';
@@ -17,11 +18,12 @@ class ResultsApprovalReleasePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final session = AuthSession.instance.session;
-    final role = session?.primaryRole.isNotEmpty == true
+    final rawRole = session?.primaryRole.isNotEmpty == true
         ? session!.primaryRole
         : (session?.roles.isNotEmpty == true ? session!.roles.first : '');
+    final role = adminRoleFromCode(rawRole);
 
-    if (role == 'exam_officer') {
+    if (role == AdminRole.examOfficer) {
       return const Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -36,7 +38,7 @@ class ResultsApprovalReleasePanel extends StatelessWidget {
       );
     }
 
-    if (role == 'hod') {
+    if (role == AdminRole.hod) {
       return const HodLevelResultsPanel();
     }
 
