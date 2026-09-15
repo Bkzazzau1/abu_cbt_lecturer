@@ -306,25 +306,26 @@ class LecturerCourseCollaborationState extends ChangeNotifier {
     required String action,
   }) {
     final id = '${_normalize(courseCode)}-gradebook';
-    LecturerCourseWorkItem? item;
+    LecturerCourseWorkItem? existing;
     for (final work in _work) {
       if (work.id == id) {
-        item = work;
+        existing = work;
         break;
       }
     }
-    item ??= LecturerCourseWorkItem(
-      id: id,
-      courseCode: courseCode,
-      category: 'Gradebook',
-      title: 'Students & Scores',
-      details:
-          'Shared course gradebook for CA 1, CA 2, exam scores, totals and final result review.',
-      status: 'Open',
-      createdBy: actor,
-      lastEditedBy: actor,
-    );
-    if (!_work.contains(item)) _work.add(item);
+    final item = existing ??
+        LecturerCourseWorkItem(
+          id: id,
+          courseCode: courseCode,
+          category: 'Gradebook',
+          title: 'Students & Scores',
+          details:
+              'Shared course gradebook for CA 1, CA 2, exam scores, totals and final result review.',
+          status: 'Open',
+          createdBy: actor,
+          lastEditedBy: actor,
+        );
+    if (existing == null) _work.add(item);
     if (!item.locked) item.lastEditedBy = actor;
     item.activity.insert(
       0,
