@@ -137,22 +137,6 @@ String _workspaceSubtitleForRole(AdminRole role) {
   return 'Ahmadu Bello University, Zaria';
 }
 
-IconData _workspaceIconForRole(AdminRole role) {
-  if (role == AdminRole.hod) {
-    return Icons.account_tree_outlined;
-  }
-  if (role == AdminRole.lecturer) {
-    return Icons.school_outlined;
-  }
-  if (role == AdminRole.moderator) {
-    return Icons.rule_folder_outlined;
-  }
-  if (role == AdminRole.examOfficer) {
-    return Icons.assignment_turned_in_outlined;
-  }
-  return Icons.account_balance_outlined;
-}
-
 class AdminOperationsShell extends StatefulWidget {
   const AdminOperationsShell({
     super.key,
@@ -299,9 +283,15 @@ class _AdminSideBar extends StatelessWidget {
             children: [
               ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: scheme.primary,
-                  foregroundColor: scheme.onPrimary,
-                  child: Icon(_workspaceIconForRole(selectedRole)),
+                  backgroundColor: scheme.onPrimary,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/abulogo.png',
+                      width: 36,
+                      height: 36,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
                 title: Text(
                   _workspaceTitleForRole(selectedRole),

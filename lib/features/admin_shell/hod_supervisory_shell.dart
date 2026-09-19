@@ -149,9 +149,15 @@ class _HodNavigation extends StatelessWidget {
             children: [
               ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: scheme.primary,
-                  foregroundColor: scheme.onPrimary,
-                  child: const Icon(Icons.account_tree_outlined),
+                  backgroundColor: scheme.onPrimary,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/abulogo.png',
+                      width: 36,
+                      height: 36,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
                 title: const Text(
                   'HoD Workspace',

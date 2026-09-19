@@ -211,7 +211,7 @@ class _ExamMalpracticePageState extends State<ExamMalpracticePage> {
             SizedBox(
               width: 240,
               child: DropdownButtonFormField<ExamMalpracticeStatus?>(
-                value: _status,
+                initialValue: _status,
                 isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Case status',
@@ -513,7 +513,7 @@ class _ExamMalpracticePageState extends State<ExamMalpracticePage> {
                   _field(venue, 'Venue'),
                   _field(reporter, 'Reported by'),
                   DropdownButtonFormField<String>(
-                    value: incidentType,
+                    initialValue: incidentType,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Incident type',

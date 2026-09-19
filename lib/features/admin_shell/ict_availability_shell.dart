@@ -17,16 +17,13 @@ class IctAvailabilityShell extends StatelessWidget {
         titleSpacing: 20,
         title: Row(
           children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: scheme.primaryContainer,
-                borderRadius: BorderRadius.circular(13),
-              ),
-              child: Icon(
-                Icons.admin_panel_settings_outlined,
-                color: scheme.onPrimaryContainer,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(13),
+              child: Image.asset(
+                'assets/abulogo.png',
+                width: 42,
+                height: 42,
+                fit: BoxFit.cover,
               ),
             ),
             const SizedBox(width: 12),

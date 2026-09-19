@@ -299,7 +299,9 @@ class _HodMalpracticeCasesPanelState extends State<HodMalpracticeCasesPanel> {
           FilledButton(
             onPressed: () {
               if (authorityController.text.trim().isEmpty ||
-                  decisionController.text.trim().isEmpty) return;
+                  decisionController.text.trim().isEmpty) {
+                return;
+              }
               Navigator.pop(context, true);
             },
             child: const Text('Record Decision'),

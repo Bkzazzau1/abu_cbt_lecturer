@@ -138,7 +138,8 @@ class _HodExamOversightPanelState extends State<HodExamOversightPanel> {
             SizedBox(
               width: 210,
               child: DropdownButtonFormField<String>(
-                value: _level,
+                initialValue: _level,
+                isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Level',
                   prefixIcon: Icon(Icons.layers_outlined),
@@ -147,10 +148,13 @@ class _HodExamOversightPanelState extends State<HodExamOversightPanel> {
                 items: [
                   const DropdownMenuItem(
                     value: 'All Levels',
-                    child: Text('All Levels'),
+                    child: Text('All Levels', overflow: TextOverflow.ellipsis),
                   ),
                   for (final level in _workflow.levels)
-                    DropdownMenuItem(value: level, child: Text(level)),
+                    DropdownMenuItem(
+                      value: level,
+                      child: Text(level, overflow: TextOverflow.ellipsis),
+                    ),
                 ],
                 onChanged: (value) {
                   if (value != null) setState(() => _level = value);
